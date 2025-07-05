@@ -10,6 +10,7 @@ import { AddBookmarkToCollectionCommand } from './commands/AddBookmarkToCollecti
 import { DeleteCollectionCommand } from './commands/DeleteCollectionCommand';
 import { DeleteBookmarkCommand } from './commands/DeleteBookmarkCommand';
 import { EditBookmarkDescriptionCommand } from './commands/EditBookmarkDescriptionCommand';
+import { OpenSettingsCommand } from './commands/OpenSettingsCommand';
 import { Collection } from './models/Collection';
 
 
@@ -269,6 +270,16 @@ export class ExtensionManager {
       }
     );
     this.disposables.push(collapseAllCommand);
+
+    // Open settings command
+    const openSettingsCommand = vscode.commands.registerCommand(
+      'lightBookmarks.openSettings',
+      () => {
+        const command = new OpenSettingsCommand();
+        command.execute();
+      }
+    );
+    this.disposables.push(openSettingsCommand);
   }
 
   private registerEventListeners(): void {
@@ -295,6 +306,15 @@ export class ExtensionManager {
       this.decorationProvider.updateDecorations();
     });
     this.disposables.push(onDidChangeWorkspaceFolders);
+
+    // Refresh tree view when settings change
+    const onDidChangeConfiguration = vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration('lightBookmarks.showLineNumbers') || 
+          event.affectsConfiguration('lightBookmarks.maxBookmarksPerFile')) {
+        this.treeDataProvider.refresh();
+      }
+    });
+    this.disposables.push(onDidChangeConfiguration);
   }
 
   public dispose(): void {

@@ -95,6 +95,7 @@ export class ToggleBookmarkCommand {
         // Also refresh root to update counts
         this.treeDataProvider.refreshRoot();
       }
+      // Note: If bookmark is null, the BookmarkManager already showed a warning message
     }
 
     this.decorationProvider.updateDecorations(editor);

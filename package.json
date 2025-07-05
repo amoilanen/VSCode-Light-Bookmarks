@@ -15,6 +15,24 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Light Bookmarks",
+      "properties": {
+        "lightBookmarks.showLineNumbers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show line numbers in the bookmarks view"
+        },
+
+        "lightBookmarks.maxBookmarksPerFile": {
+          "type": "number",
+          "default": 100,
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Maximum number of bookmarks allowed per file"
+        }
+      }
+    },
     "commands": [
       {
         "command": "lightBookmarks.toggleBookmark",
@@ -56,6 +74,12 @@
         "title": "Collapse all",
         "category": "Light Bookmarks",
         "icon": "$(collapse-all)"
+      },
+      {
+        "command": "lightBookmarks.openSettings",
+        "title": "Open bookmark settings",
+        "category": "Light Bookmarks",
+        "icon": "$(gear)"
       }
     ],
     "keybindings": [
@@ -102,6 +126,12 @@
           "group": "navigation",
           "when": "view == lightBookmarks.bookmarksView",
           "icon": "$(collapse-all)"
+        },
+        {
+          "command": "lightBookmarks.openSettings",
+          "group": "navigation",
+          "when": "view == lightBookmarks.bookmarksView",
+          "icon": "$(gear)"
         }
       ],
       "view/item/context": [
@@ -152,6 +182,9 @@
         },
         {
           "command": "lightBookmarks.collapseAll"
+        },
+        {
+          "command": "lightBookmarks.openSettings"
         }
       ]
     }

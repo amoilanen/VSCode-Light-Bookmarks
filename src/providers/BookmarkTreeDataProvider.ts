@@ -12,7 +12,11 @@ export class CodeLineTreeItem extends vscode.TreeItem {
   ) {
     super(codeLine, vscode.TreeItemCollapsibleState.None);
     this.tooltip = `Line ${lineNumber}: ${codeLine}`;
-    this.description = `Line ${lineNumber}`;
+    
+    // Only show line number in description if the setting is enabled
+    const showLineNumbers = vscode.workspace.getConfiguration('lightBookmarks').get<boolean>('showLineNumbers', true);
+    this.description = showLineNumbers ? `Line ${lineNumber}` : undefined;
+    
     this.contextValue = 'code-line';
     this.command = {
       command: 'vscode.open',
@@ -55,8 +59,10 @@ export class BookmarkTreeItem extends vscode.TreeItem {
       this.resourceUri = vscode.Uri.parse(`bookmark://${bookmark.uri}:${bookmark.line}`);
       
       // Add hover actions for bookmark items with description
+      const showLineNumbers = vscode.workspace.getConfiguration('lightBookmarks').get<boolean>('showLineNumbers', true);
+      const lineInfo = showLineNumbers ? `:${bookmark.line}` : '';
       const description = bookmark.description ? `\n\n**Description:** ${bookmark.description}` : '';
-      this.tooltip = new vscode.MarkdownString(`${bookmark.uri}:${bookmark.line}${description}\n\n**Click to open**`);
+      this.tooltip = new vscode.MarkdownString(`${bookmark.uri}${lineInfo}${description}\n\n**Click to open**`);
       this.tooltip.isTrusted = true;
     } else if (collection) {
       this.tooltip = collection.name;
@@ -261,8 +267,12 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         ? vscode.TreeItemCollapsibleState.Expanded
         : vscode.TreeItemCollapsibleState.Collapsed;
       
+      // Show line numbers in label based on setting
+      const showLineNumbers = vscode.workspace.getConfiguration('lightBookmarks').get<boolean>('showLineNumbers', true);
+      const label = showLineNumbers ? `${fileName}:${bookmark.line}` : fileName;
+      
       return new BookmarkTreeItem(
-        `${fileName}:${bookmark.line}`,
+        label,
         collapsibleState,
         bookmark
       );

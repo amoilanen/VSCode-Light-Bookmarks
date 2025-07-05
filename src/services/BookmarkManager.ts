@@ -1,4 +1,5 @@
 import { Bookmark } from '../models/Bookmark';
+import * as vscode from 'vscode';
 
 export class BookmarkManager {
   private bookmarks: Bookmark[] = [];
@@ -8,6 +9,17 @@ export class BookmarkManager {
     // Check if bookmark already exists
     const existingBookmark = this.bookmarks.find(b => b.uri === uri && b.line === line);
     if (existingBookmark) {
+      return null;
+    }
+
+    // Check max bookmarks per file setting
+    const maxBookmarksPerFile = vscode.workspace.getConfiguration('lightBookmarks').get<number>('maxBookmarksPerFile', 100);
+    const bookmarksInFile = this.bookmarks.filter(b => b.uri === uri).length;
+    
+    if (bookmarksInFile >= maxBookmarksPerFile) {
+      vscode.window.showWarningMessage(
+        `Cannot add bookmark: Maximum of ${maxBookmarksPerFile} bookmarks per file reached. Please remove some bookmarks first.`
+      );
       return null;
     }
 
