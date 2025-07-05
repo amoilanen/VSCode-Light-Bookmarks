@@ -15,12 +15,6 @@ export class DeleteCollectionCommand {
   ) {}
 
   public async execute(collectionId: string): Promise<void> {
-    // Prevent deletion of the "Ungrouped" collection
-    if (collectionId === 'ungrouped-bookmarks') {
-      vscode.window.showErrorMessage('The "Ungrouped" collection cannot be deleted');
-      return;
-    }
-
     const collection = this.collectionManager.getCollection(collectionId);
     if (!collection) {
       vscode.window.showErrorMessage('Collection not found');
@@ -30,6 +24,33 @@ export class DeleteCollectionCommand {
     // Get bookmarks in this collection
     const bookmarksInCollection = this.bookmarkManager.getBookmarksByCollection(collectionId);
     
+    // Special handling for "Ungrouped" collection
+    if (collectionId === 'ungrouped-bookmarks') {
+      if (bookmarksInCollection.length === 0) {
+        vscode.window.showInformationMessage('The "Ungrouped" collection is empty and cannot be deleted');
+        return;
+      }
+      
+      // For "Ungrouped" collection, ask for confirmation with different message
+      const result = await vscode.window.showWarningMessage(
+        'Deleting the "Ungrouped" collection will delete all ungrouped bookmarks. This action cannot be undone. Proceed?',
+        { modal: true },
+        'Delete'
+      );
+
+      if (result === 'Delete') {
+        // Remove all bookmarks in the collection
+        bookmarksInCollection.forEach(bookmark => {
+          this.bookmarkManager.removeBookmark(bookmark.uri, bookmark.line);
+        });
+        
+        // Delete the collection
+        await this.deleteCollection(collectionId, collection);
+      }
+      return;
+    }
+    
+    // For regular collections
     // If collection is empty, delete immediately
     if (bookmarksInCollection.length === 0) {
       await this.deleteCollection(collectionId, collection);

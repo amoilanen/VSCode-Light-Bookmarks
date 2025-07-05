@@ -34,14 +34,9 @@ export class AddToCollectionCommand {
     // Get available collections for current workspace
     const currentWorkspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
     const collections = this.collectionManager.getCollectionsForWorkspace(currentWorkspaceId);
-    
-    // Add "Ungrouped" option to the list
-    const collectionOptions = [
-      { label: 'Ungrouped', id: 'ungrouped' },
-      ...collections.map(c => ({ label: c.name, id: c.id }))
-    ];
+    const collectionOptions = collections.map(c => ({ label: c.name, id: c.id }));
 
-    if (collectionOptions.length === 1) {
+    if (collectionOptions.length === 0) {
       vscode.window.showInformationMessage('No collections available. Please create a collection first.');
       return;
     }
@@ -55,41 +50,26 @@ export class AddToCollectionCommand {
       return; // User cancelled
     }
 
-    // Remove the existing bookmark and add it to the collection or ungroup it
+    // Remove the existing bookmark and add it to the collection
     const description = existingBookmark.description;
     this.bookmarkManager.removeBookmark(uri, line);
     let newBookmark;
-    
-    if (selectedOption.id === 'ungrouped') {
-      newBookmark = this.bookmarkManager.addBookmark(uri, line, undefined, description);
-    } else {
-      newBookmark = this.bookmarkManager.addBookmark(uri, line, selectedOption.id, description);
-    }
+    newBookmark = this.bookmarkManager.addBookmark(uri, line, selectedOption.id, description);
 
     if (newBookmark) {
-      const message = selectedOption.id === 'ungrouped' 
+      const message = selectedOption.id === 'ungrouped-bookmarks' 
         ? 'Bookmark moved to ungrouped'
         : `Bookmark added to collection "${selectedOption.label}"`;
       vscode.window.showInformationMessage(message);
-      
       // Save to storage
       await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
-      
       // Refresh only the relevant parts of the tree
-      if (newBookmark.collectionId) {
-        // Bookmark was added to a collection, refresh that collection
-        const collection = this.collectionManager.getCollection(newBookmark.collectionId);
-        if (collection) {
-          this.treeDataProvider.refreshCollection(collection);
-        }
-      } else {
-        // Bookmark was moved to ungrouped, refresh ungrouped section
-        this.treeDataProvider.refreshUngrouped();
+      const collection = this.collectionManager.getCollection(newBookmark.collectionId || 'ungrouped-bookmarks');
+      if (collection) {
+        this.treeDataProvider.refreshCollection(collection);
       }
-      
       // Also refresh root to update counts
       this.treeDataProvider.refreshRoot();
-      
       this.decorationProvider.updateDecorations(editor);
     }
   }

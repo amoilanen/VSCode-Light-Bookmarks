@@ -3,6 +3,7 @@ import { BookmarkTreeDataProvider, BookmarkTreeItem, CodeLineTreeItem, EmptyStat
 import { BookmarkManager } from '../../services/BookmarkManager';
 import { CollectionManager } from '../../services/CollectionManager';
 import { Bookmark } from '../../models/Bookmark';
+import { Collection } from '../../models/Collection';
 
 // Mock vscode
 jest.mock('vscode', () => ({
@@ -69,13 +70,18 @@ describe('BookmarkTreeDataProvider', () => {
   let collectionManager: CollectionManager;
 
   beforeEach(() => {
-    bookmarkManager = new BookmarkManager();
     collectionManager = new CollectionManager();
+    bookmarkManager = new BookmarkManager(collectionManager);
+    // Add the 'Ungrouped' collection that is always expected to exist
+    const wsId = 'file:///workspace';
+    const ungrouped = new Collection('Ungrouped', wsId, 0);
+    Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
+    collectionManager.addCollection(ungrouped);
     treeDataProvider = new BookmarkTreeDataProvider(bookmarkManager, collectionManager);
     // Patch workspaceFolders to match the test URI
     (vscode.workspace as unknown as { workspaceFolders: vscode.WorkspaceFolder[] }).workspaceFolders = [
       { 
-        uri: vscode.Uri.parse('file:///workspace'),
+        uri: vscode.Uri.parse(wsId),
         name: 'workspace',
         index: 0
       },
@@ -88,13 +94,15 @@ describe('BookmarkTreeDataProvider', () => {
       
       expect(children).toHaveLength(1);
       expect(children[0]).toBeInstanceOf(EmptyStateTreeItem);
-      expect((children[0] as EmptyStateTreeItem).label).toBe('No bookmarks added yet');
+      expect((children[0] as EmptyStateTreeItem).label).toBe('No bookmarks');
     });
 
     it('should return root items when bookmarks exist', async () => {
       // Use a URI that matches the workspace folder
-      const bookmark = new Bookmark('file:///workspace/test.ts', 5);
-      bookmarkManager.addBookmark(bookmark.uri, bookmark.line);
+      bookmarkManager.addBookmark('file:///workspace/test.ts', 5, 'ungrouped-bookmarks', 'desc');
+      // Debug: log all bookmarks and collections
+      console.log('Bookmarks:', bookmarkManager.getAllBookmarks());
+      console.log('Collections:', collectionManager.getAllCollections());
       const children = await treeDataProvider.getChildren();
       
       expect(children).toHaveLength(1);
@@ -165,10 +173,13 @@ describe('BookmarkTreeDataProvider', () => {
     it('should create an empty state tree item with correct properties', () => {
       const treeItem = new EmptyStateTreeItem();
       
-      expect(treeItem.label).toBe('No bookmarks added yet');
-      expect(treeItem.tooltip).toBe('Click the bookmark icon in the gutter or use Ctrl+Shift+B to add your first bookmark');
+      expect(treeItem.label).toBe('No bookmarks');
+      expect(treeItem.tooltip).toEqual({
+        value: 'No bookmarks added yet\n\nAdd first bookmark with Ctrl+Alt+K in file editor',
+        isTrusted: true
+      });
       expect(treeItem.contextValue).toBe('empty-state');
-      expect(treeItem.description).toBe('Use Ctrl+Shift+B to add bookmarks');
+      expect(treeItem.description).toBe('Add first bookmark in file editor');
       // Accept 0 (None) or undefined for collapsibleState due to mock
       expect([0, undefined]).toContain(treeItem.collapsibleState);
     });

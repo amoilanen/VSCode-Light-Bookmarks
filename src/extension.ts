@@ -12,6 +12,9 @@ import { DeleteBookmarkCommand } from './commands/DeleteBookmarkCommand';
 import { EditBookmarkDescriptionCommand } from './commands/EditBookmarkDescriptionCommand';
 import { OpenSettingsCommand } from './commands/OpenSettingsCommand';
 import { Collection } from './models/Collection';
+import { AddToCollectionCommand } from './commands/AddToCollectionCommand';
+import { MoveCollectionUpCommand } from './commands/MoveCollectionUpCommand';
+import { MoveCollectionDownCommand } from './commands/MoveCollectionDownCommand';
 
 
 
@@ -27,17 +30,11 @@ export class ExtensionManager {
 
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
-    this.bookmarkManager = new BookmarkManager();
     this.collectionManager = new CollectionManager();
+    this.bookmarkManager = new BookmarkManager(this.collectionManager);
     this.storageService = new StorageService(context.globalState);
-    this.treeDataProvider = new BookmarkTreeDataProvider(
-      this.bookmarkManager,
-      this.collectionManager
-    );
-    this.decorationProvider = new BookmarkDecorationProvider(
-      this.bookmarkManager,
-      this.collectionManager
-    );
+    this.treeDataProvider = new BookmarkTreeDataProvider(this.bookmarkManager, this.collectionManager, this.storageService);
+    this.decorationProvider = new BookmarkDecorationProvider(this.bookmarkManager, this.collectionManager);
     
     // Set up bookmark change notification
         this.bookmarkManager.setOnBookmarksChanged(() => {
@@ -56,23 +53,40 @@ export class ExtensionManager {
 
     // Restore bookmarks and collections
     bookmarks.forEach(bookmark => {
-      this.bookmarkManager.addBookmark(bookmark.uri, bookmark.line, bookmark.collectionId);
+      // Migrate undefined collectionId to 'ungrouped-bookmarks'
+      const collectionId = bookmark.collectionId || 'ungrouped-bookmarks';
+      this.bookmarkManager.addBookmark(bookmark.uri, bookmark.line, collectionId);
     });
 
+    // Track which workspaces have ungrouped
+    const workspaces = vscode.workspace.workspaceFolders?.map(wf => wf.uri.toString()) || [undefined];
+    const collectionsByWorkspace: Record<string, Collection[]> = {};
     collections.forEach(collection => {
-      // Restore the collection with its original workspace ID
-      const restoredCollection = new Collection(collection.name, collection.workspaceId);
+      // Restore the collection with its original workspace ID and order
+      const restoredCollection = new Collection(collection.name, collection.workspaceId, collection.order);
       // Override the generated id and createdAt with the stored values
       Object.defineProperty(restoredCollection, 'id', { value: collection.id, writable: false });
       Object.defineProperty(restoredCollection, 'createdAt', { value: collection.createdAt, writable: false });
       this.collectionManager.addCollection(restoredCollection);
+      const ws = collection.workspaceId || 'undefined';
+      if (!collectionsByWorkspace[ws]) collectionsByWorkspace[ws] = [];
+      collectionsByWorkspace[ws].push(restoredCollection);
     });
+    // Ensure ungrouped exists for each workspace
+    for (const ws of workspaces) {
+      if (!this.collectionManager.hasCollectionForWorkspace('ungrouped-bookmarks', ws)) {
+        const ungrouped = new Collection('Ungrouped', ws, 0);
+        Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
+        this.collectionManager.addCollection(ungrouped);
+      }
+    }
 
-    // Register tree data provider
+    // Register tree data provider with drag and drop support
     const treeView = vscode.window.createTreeView(
       'lightBookmarks.bookmarksView',
       {
-        treeDataProvider: this.treeDataProvider
+        treeDataProvider: this.treeDataProvider,
+        dragAndDropController: this.treeDataProvider
       }
     );
     this.disposables.push(treeView);
@@ -236,6 +250,50 @@ export class ExtensionManager {
     );
     this.disposables.push(deleteCollectionCommand);
 
+    // Move collection up command
+    const moveCollectionUpCommand = vscode.commands.registerCommand(
+      'lightBookmarks.moveCollectionUp',
+      (treeItem?: BookmarkTreeItem) => {
+        let collectionId: string | undefined;
+
+        if (treeItem?.collection) {
+          collectionId = treeItem.collection.id;
+        }
+
+        if (collectionId) {
+          const command = new MoveCollectionUpCommand(
+            this.collectionManager,
+            this.storageService,
+            this.treeDataProvider
+          );
+          command.execute(collectionId);
+        }
+      }
+    );
+    this.disposables.push(moveCollectionUpCommand);
+
+    // Move collection down command
+    const moveCollectionDownCommand = vscode.commands.registerCommand(
+      'lightBookmarks.moveCollectionDown',
+      (treeItem?: BookmarkTreeItem) => {
+        let collectionId: string | undefined;
+
+        if (treeItem?.collection) {
+          collectionId = treeItem.collection.id;
+        }
+
+        if (collectionId) {
+          const command = new MoveCollectionDownCommand(
+            this.collectionManager,
+            this.storageService,
+            this.treeDataProvider
+          );
+          command.execute(collectionId);
+        }
+      }
+    );
+    this.disposables.push(moveCollectionDownCommand);
+
     // Delete bookmark command
     const deleteBookmarkCommand = vscode.commands.registerCommand(
       'lightBookmarks.deleteBookmark',
@@ -262,11 +320,27 @@ export class ExtensionManager {
     );
     this.disposables.push(deleteBookmarkCommand);
 
+    // Add to collection command (for editor context menu)
+    const addToCollectionCommand = vscode.commands.registerCommand(
+      'lightBookmarks.addToCollection',
+      () => {
+        const command = new AddToCollectionCommand(
+          this.bookmarkManager,
+          this.collectionManager,
+          this.storageService,
+          this.treeDataProvider,
+          this.decorationProvider
+        );
+        command.execute();
+      }
+    );
+    this.disposables.push(addToCollectionCommand);
+
     // Collapse all command
     const collapseAllCommand = vscode.commands.registerCommand(
       'lightBookmarks.collapseAll',
       () => {
-        vscode.commands.executeCommand('workbench.actions.treeView.lightBookmarks.bookmarksView.collapseAll');
+        vscode.commands.executeCommand('workbench.actions.treeView.collapseAll', 'lightBookmarks.bookmarksView');
       }
     );
     this.disposables.push(collapseAllCommand);
@@ -325,7 +399,7 @@ export class ExtensionManager {
 
 export function activate(context: vscode.ExtensionContext): void {
   const extensionManager = new ExtensionManager(context);
-  
+
   context.subscriptions.push(
     vscode.Disposable.from(extensionManager)
   );

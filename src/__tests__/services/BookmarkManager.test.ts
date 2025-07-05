@@ -1,4 +1,5 @@
 import { BookmarkManager } from '../../services/BookmarkManager';
+import { CollectionManager } from '../../services/CollectionManager';
 import { Bookmark } from '../../models/Bookmark';
 import { Collection } from '../../models/Collection';
 
@@ -8,7 +9,8 @@ describe('BookmarkManager', () => {
   const mockLine = 10;
 
   beforeEach(() => {
-    bookmarkManager = new BookmarkManager();
+    const collectionManager = new CollectionManager();
+    bookmarkManager = new BookmarkManager(collectionManager);
   });
 
   describe('addBookmark', () => {
@@ -118,6 +120,50 @@ describe('BookmarkManager', () => {
       bookmarkManager.clearAllBookmarks();
 
       expect(bookmarkManager.getAllBookmarks()).toHaveLength(0);
+    });
+  });
+
+  describe('ungrouped collection creation', () => {
+    it('should automatically create ungrouped collection when adding first bookmark', () => {
+      // Arrange - start with empty collection manager
+      const collectionManager = new CollectionManager();
+      const bookmarkManager = new BookmarkManager(collectionManager);
+      
+      // Act - add a bookmark without specifying collection
+      const bookmark = bookmarkManager.addBookmark(mockUri, mockLine);
+      
+      // Assert
+      expect(bookmark).not.toBeNull();
+      if (bookmark) {
+        expect(bookmark.collectionId).toBe('ungrouped-bookmarks');
+      }
+      
+      // Check that the ungrouped collection was created
+      const ungroupedCollection = collectionManager.getCollection('ungrouped-bookmarks');
+      expect(ungroupedCollection).toBeDefined();
+      expect(ungroupedCollection?.name).toBe('Ungrouped');
+    });
+
+    it('should reuse existing ungrouped collection when adding more bookmarks', () => {
+      // Arrange - start with empty collection manager
+      const collectionManager = new CollectionManager();
+      const bookmarkManager = new BookmarkManager(collectionManager);
+      
+      // Act - add two bookmarks
+      const bookmark1 = bookmarkManager.addBookmark(mockUri, 10);
+      const bookmark2 = bookmarkManager.addBookmark(mockUri, 20);
+      
+      // Assert
+      expect(bookmark1).not.toBeNull();
+      expect(bookmark2).not.toBeNull();
+      
+      // Check that only one ungrouped collection exists
+      const ungroupedCollection = collectionManager.getCollection('ungrouped-bookmarks');
+      expect(ungroupedCollection).toBeDefined();
+      
+      const allCollections = collectionManager.getAllCollections();
+      const ungroupedCollections = allCollections.filter(c => c.id === 'ungrouped-bookmarks');
+      expect(ungroupedCollections).toHaveLength(1);
     });
   });
 }); 

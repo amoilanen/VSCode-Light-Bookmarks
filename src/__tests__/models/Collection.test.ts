@@ -11,6 +11,7 @@ describe('Collection', () => {
       expect(collection.id).toBeDefined();
       expect(collection.createdAt).toBeInstanceOf(Date);
       expect(collection.workspaceId).toBeUndefined();
+      expect(collection.order).toBe(0);
     });
 
     it('should create a collection with workspace ID', () => {
@@ -21,6 +22,19 @@ describe('Collection', () => {
       expect(collection.id).toBeDefined();
       expect(collection.createdAt).toBeInstanceOf(Date);
       expect(collection.workspaceId).toBe(workspaceId);
+      expect(collection.order).toBe(0);
+    });
+
+    it('should create a collection with custom order', () => {
+      const workspaceId = 'file:///test/workspace';
+      const order = 42;
+      const collection = new Collection(mockName, workspaceId, order);
+
+      expect(collection.name).toBe(mockName);
+      expect(collection.id).toBeDefined();
+      expect(collection.createdAt).toBeInstanceOf(Date);
+      expect(collection.workspaceId).toBe(workspaceId);
+      expect(collection.order).toBe(order);
     });
   });
 
@@ -35,6 +49,7 @@ describe('Collection', () => {
         name: mockName,
         createdAt: collection.createdAt.toISOString(),
         workspaceId: undefined,
+        order: 0,
       });
     });
 
@@ -49,6 +64,23 @@ describe('Collection', () => {
         name: mockName,
         createdAt: collection.createdAt.toISOString(),
         workspaceId: workspaceId,
+        order: 0,
+      });
+    });
+
+    it('should serialize collection with custom order to JSON', () => {
+      const workspaceId = 'file:///test/workspace';
+      const order = 42;
+      const collection = new Collection(mockName, workspaceId, order);
+
+      const json = collection.toJSON();
+
+      expect(json).toEqual({
+        id: collection.id,
+        name: mockName,
+        createdAt: collection.createdAt.toISOString(),
+        workspaceId: workspaceId,
+        order: order,
       });
     });
   });
@@ -68,6 +100,7 @@ describe('Collection', () => {
       expect(collection.name).toBe(mockName);
       expect(collection.createdAt).toEqual(createdAt);
       expect(collection.workspaceId).toBeUndefined();
+      expect(collection.order).toBe(0);
     });
 
     it('should deserialize collection with workspace ID from JSON', () => {
@@ -86,6 +119,28 @@ describe('Collection', () => {
       expect(collection.name).toBe(mockName);
       expect(collection.createdAt).toEqual(createdAt);
       expect(collection.workspaceId).toBe(workspaceId);
+      expect(collection.order).toBe(0);
+    });
+
+    it('should deserialize collection with order from JSON', () => {
+      const createdAt = new Date();
+      const workspaceId = 'file:///test/workspace';
+      const order = 42;
+      const json = {
+        id: 'test-id',
+        name: mockName,
+        createdAt: createdAt.toISOString(),
+        workspaceId: workspaceId,
+        order: order,
+      };
+
+      const collection = Collection.fromJSON(json);
+
+      expect(collection.id).toBe(json.id);
+      expect(collection.name).toBe(mockName);
+      expect(collection.createdAt).toEqual(createdAt);
+      expect(collection.workspaceId).toBe(workspaceId);
+      expect(collection.order).toBe(order);
     });
   });
 }); 

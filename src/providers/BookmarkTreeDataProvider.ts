@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { BookmarkManager } from '../services/BookmarkManager';
 import { CollectionManager } from '../services/CollectionManager';
+import { StorageService } from '../services/StorageService';
 import { Bookmark } from '../models/Bookmark';
 import { Collection } from '../models/Collection';
 
@@ -78,21 +79,16 @@ export class BookmarkTreeItem extends vscode.TreeItem {
     } else if (collection) {
       this.tooltip = collection.name;
       this.iconPath = new vscode.ThemeIcon('folder');
-      // Set different context value for "Ungrouped" collection to prevent deletion
-      this.contextValue = collection.id === 'ungrouped-bookmarks' ? 'ungrouped-collection' : 'collection';
-      // Add command arguments for context menu actions
+      // All collections can now be deleted, including "Ungrouped"
+      this.contextValue = 'collection';
       this.resourceUri = vscode.Uri.parse(`collection://${collection.id}`);
-      
-      // Add hover actions for collection items (only for non-ungrouped collections)
-      if (collection.id !== 'ungrouped-bookmarks') {
-        this.tooltip = new vscode.MarkdownString(`${collection.name}\n\n**Click to expand**`);
-        this.tooltip.isTrusted = true;
-      }
+      this.tooltip = new vscode.MarkdownString(`${collection.name}\n\n**Click to expand**`);
+      this.tooltip.isTrusted = true;
     }
   }
 }
 
-export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem> {
+export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void> = new vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void>();
   readonly onDidChangeTreeData: vscode.Event<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
   
@@ -102,9 +98,14 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
   private expandedCollections: Set<string> = new Set();
   private expandedBookmarks: Set<string> = new Set(); // key: `${uri}:${line}`
 
+  // Drag and drop support
+  readonly dropMimeTypes = ['application/vnd.code.tree.lightBookmarks.bookmarksView'];
+  readonly dragMimeTypes = ['application/vnd.code.tree.lightBookmarks.bookmarksView'];
+
   constructor(
     private bookmarkManager: BookmarkManager,
-    private collectionManager: CollectionManager
+    private collectionManager: CollectionManager,
+    private storageService?: StorageService
   ) {}
 
   public setTreeView(treeView: vscode.TreeView<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem>): void {
@@ -175,19 +176,6 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     this._onDidChangeTreeData.fire(collectionItem);
   }
 
-  /**
-   * Refresh the ungrouped bookmarks section, preserving expanded state
-   */
-  public refreshUngrouped(): void {
-    const ungroupedItem = new BookmarkTreeItem(
-      'Ungrouped',
-      vscode.TreeItemCollapsibleState.Collapsed,
-      undefined,
-      { id: 'ungrouped-bookmarks', name: 'Ungrouped', createdAt: new Date() } as Collection
-    );
-    this._onDidChangeTreeData.fire(ungroupedItem);
-  }
-
   public getTreeItem(element: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem): vscode.TreeItem {
     return element;
   }
@@ -208,6 +196,65 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     }
   }
 
+  // Drag and drop implementation
+  public async handleDrag(source: readonly (BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem)[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+    // Only allow dragging collection items
+    const collectionItems = source.filter(item => item instanceof BookmarkTreeItem && (item as BookmarkTreeItem).collection) as BookmarkTreeItem[];
+    
+    if (collectionItems.length > 0) {
+      const collectionIds = collectionItems.map(item => (item as BookmarkTreeItem).collection!.id);
+      dataTransfer.set('application/vnd.code.tree.lightBookmarks.bookmarksView', new vscode.DataTransferItem(collectionIds));
+    }
+  }
+
+  public async handleDrop(target: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+    // Only allow dropping on collection items or at root level
+    if (!target || !(target instanceof BookmarkTreeItem) || !target.collection) {
+      return;
+    }
+
+    const collectionIds = dataTransfer.get('application/vnd.code.tree.lightBookmarks.bookmarksView');
+    if (!collectionIds) {
+      return;
+    }
+
+    try {
+      const draggedCollectionIds = JSON.parse(collectionIds.value) as string[];
+      const targetCollectionId = target.collection.id;
+
+      // Move each dragged collection to the position of the target collection
+      for (const draggedCollectionId of draggedCollectionIds) {
+        if (draggedCollectionId === targetCollectionId) {
+          continue; // Skip if dragging onto itself
+        }
+
+        const targetCollection = this.collectionManager.getCollection(targetCollectionId);
+        const draggedCollection = this.collectionManager.getCollection(draggedCollectionId);
+        
+        if (targetCollection && draggedCollection) {
+          // Get the current position of the target collection
+          const workspaceCollections = this.collectionManager.getCollectionsForWorkspace(targetCollection.workspaceId);
+          const targetIndex = workspaceCollections.findIndex(c => c.id === targetCollectionId);
+          
+          if (targetIndex !== -1) {
+            // Move the dragged collection to the target position
+            this.collectionManager.moveCollectionToPosition(draggedCollectionId, targetIndex);
+          }
+        }
+      }
+
+      // Save changes to storage if storage service is available
+      if (this.storageService) {
+        await this.storageService.saveCollections(this.collectionManager.getAllCollections());
+      }
+
+      // Refresh the tree view to reflect the changes
+      this.refreshRoot();
+    } catch (error) {
+      console.error('Error handling drop:', error);
+    }
+  }
+
   public async getRootItems(): Promise<(BookmarkTreeItem | EmptyStateTreeItem)[]> {
     const items: (BookmarkTreeItem | EmptyStateTreeItem)[] = [];
     const currentWorkspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
@@ -216,80 +263,44 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     
     // Filter bookmarks to only include those from the current workspace
     const workspaceBookmarks = allBookmarks.filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
-    const ungroupedBookmarks = workspaceBookmarks.filter(b => !b.collectionId);
-
-    // Check if there are any bookmarks in the current workspace
     const hasAnyBookmarks = workspaceBookmarks.length > 0;
-
-    // If no bookmarks exist, show empty state
     if (!hasAnyBookmarks) {
       return [new EmptyStateTreeItem()];
     }
-
-    // Add all collections for the current workspace (including empty ones)
+    // Add all collections for the current workspace (including ungrouped)
     for (const collection of collections) {
-      const collectionBookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id);
-      const workspaceCollectionBookmarks = collectionBookmarks.filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
-      
+      // Always use getBookmarksByCollection for all collections
+      const collectionBookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id).filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
       // Set collapsible state based on whether it was previously expanded
       const collapsibleState = this.isCollectionExpanded(collection.id) 
         ? vscode.TreeItemCollapsibleState.Expanded 
-        : (workspaceCollectionBookmarks.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
-      
+        : (collectionBookmarks.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
       items.push(
         new BookmarkTreeItem(
-          `${collection.name} (${workspaceCollectionBookmarks.length})`,
+          `${collection.name} (${collectionBookmarks.length})`,
           collapsibleState,
           undefined,
           collection
         )
       );
     }
-
-    // Add ungrouped bookmarks
-    if (ungroupedBookmarks.length > 0) {
-      const collapsibleState = this.isCollectionExpanded('ungrouped-bookmarks')
-        ? vscode.TreeItemCollapsibleState.Expanded
-        : vscode.TreeItemCollapsibleState.Collapsed;
-      
-      items.push(
-        new BookmarkTreeItem(
-          `Ungrouped (${ungroupedBookmarks.length})`,
-          collapsibleState,
-          undefined,
-          { id: 'ungrouped-bookmarks', name: 'Ungrouped', createdAt: new Date() } as Collection
-        )
-      );
-    }
-
     return items;
   }
 
   private async getCollectionBookmarks(collection: Collection): Promise<BookmarkTreeItem[]> {
-    let bookmarks: Bookmark[];
-
-    if (collection.id === 'ungrouped-bookmarks') {
-      bookmarks = this.bookmarkManager.getAllBookmarks().filter(b => !b.collectionId);
-    } else {
-      bookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id);
-    }
-
+    const bookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id);
     // Filter bookmarks to only include those from the current workspace
     const workspaceBookmarks = bookmarks.filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
-
     return workspaceBookmarks.map(bookmark => {
       const fileName = this.getFileName(bookmark.uri);
       const bookmarkKey = `${bookmark.uri}:${bookmark.line}`;
-      
       // Set collapsible state based on whether it was previously expanded
       const collapsibleState = this.isBookmarkExpanded(bookmarkKey)
         ? vscode.TreeItemCollapsibleState.Expanded
         : vscode.TreeItemCollapsibleState.Collapsed;
-      
       // Show line numbers in label based on setting
       const showLineNumbers = vscode.workspace.getConfiguration('lightBookmarks').get<boolean>('showLineNumbers', true);
       const label = showLineNumbers ? `${fileName}:${bookmark.line}` : fileName;
-      
       return new BookmarkTreeItem(
         label,
         collapsibleState,

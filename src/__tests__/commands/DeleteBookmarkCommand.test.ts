@@ -34,8 +34,8 @@ describe('DeleteBookmarkCommand', () => {
   let decorationProvider: BookmarkDecorationProvider;
 
   beforeEach(() => {
-    bookmarkManager = new BookmarkManager();
     collectionManager = new CollectionManager();
+    bookmarkManager = new BookmarkManager(collectionManager);
     storageService = {
       saveBookmarks: jest.fn(),
     } as unknown as StorageService;
@@ -79,7 +79,6 @@ describe('DeleteBookmarkCommand', () => {
 
       expect(bookmarkManager.getAllBookmarks()).toHaveLength(0);
       expect(storageService.saveBookmarks).toHaveBeenCalled();
-      expect(treeDataProvider.refreshUngrouped).toHaveBeenCalled();
       expect(treeDataProvider.refreshRoot).toHaveBeenCalled();
     });
 
@@ -110,7 +109,7 @@ describe('DeleteBookmarkCommand', () => {
         'Failed to delete bookmark'
       );
       expect(storageService.saveBookmarks).not.toHaveBeenCalled();
-      expect(treeDataProvider.refresh).not.toHaveBeenCalled();
+      expect(treeDataProvider.refreshRoot).not.toHaveBeenCalled();
       expect(decorationProvider.updateDecorations).not.toHaveBeenCalled();
     });
   });

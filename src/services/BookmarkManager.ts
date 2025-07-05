@@ -1,9 +1,15 @@
 import { Bookmark } from '../models/Bookmark';
+import { CollectionManager } from './CollectionManager';
 import * as vscode from 'vscode';
 
 export class BookmarkManager {
   private bookmarks: Bookmark[] = [];
   private onBookmarksChanged: (() => void) | null = null;
+  private collectionManager: CollectionManager;
+
+  constructor(collectionManager: CollectionManager) {
+    this.collectionManager = collectionManager;
+  }
 
   public addBookmark(uri: string, line: number, collectionId?: string, description?: string): Bookmark | null {
     // Check if bookmark already exists
@@ -23,7 +29,14 @@ export class BookmarkManager {
       return null;
     }
 
-    const bookmark = new Bookmark(uri, line, collectionId, description);
+    // Ensure the "Ungrouped" collection exists if we're adding to it
+    const realCollectionId = collectionId || 'ungrouped-bookmarks';
+    if (realCollectionId === 'ungrouped-bookmarks') {
+      const workspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
+      this.collectionManager.ensureUngroupedCollection(workspaceId);
+    }
+
+    const bookmark = new Bookmark(uri, line, realCollectionId, description);
     this.bookmarks.push(bookmark);
     this.notifyBookmarksChanged();
     return bookmark;
@@ -63,7 +76,7 @@ export class BookmarkManager {
       this.removeBookmark(uri, line);
       return null;
     } else {
-      return this.addBookmark(uri, line, collectionId);
+      return this.addBookmark(uri, line, collectionId || 'ungrouped-bookmarks');
     }
   }
 

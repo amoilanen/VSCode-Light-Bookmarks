@@ -1,6 +1,16 @@
-- If there are no bookmarks yet, show the corresponding message in the tree view
+- Moving bookmarks and collections:
+    - Allow to move collections up and down in the tree view - DONE
+    - Allow to move bookmarks up and down in the tree view inside the same collection
+
+- Support jumping to bookmarks in the file editor
+  - Ctrl+Alt+N for next bookmark or menu item
+  - Ctrl+Alt+P for previous bookmark or menu item
 
 - Do not show the notification "Bookmark added at line", it is already obvious from the visual appearance
+
+- Allow to export and import the bookmarks as JSON, this might be useful for sharing bookmarks with others
+
+- Add eslint and prettier, fix all the warnings and errors
 
 - Localization for
 [

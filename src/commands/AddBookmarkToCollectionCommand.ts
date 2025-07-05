@@ -47,18 +47,14 @@ export class AddBookmarkToCollectionCommand {
       collection.id !== existingBookmark.collectionId
     );
 
-    // Add "Ungrouped" option to the list
-    const collectionOptions = [
-      { label: 'Ungrouped', id: 'ungrouped' },
-      ...availableCollections.map(c => ({ label: c.name, id: c.id }))
-    ];
+    // Show collection picker
+    const collectionOptions = availableCollections.map(c => ({ label: c.name, id: c.id }));
 
-    if (collectionOptions.length === 1) {
+    if (collectionOptions.length === 0) {
       vscode.window.showInformationMessage('No other collections available. Please create a collection first.');
       return;
     }
 
-    // Show collection picker
     const selectedOption = await vscode.window.showQuickPick(collectionOptions, {
       placeHolder: 'Select a collection to add the bookmark to'
     });
@@ -67,41 +63,26 @@ export class AddBookmarkToCollectionCommand {
       return; // User cancelled
     }
 
-    // Remove the existing bookmark and add it to the new collection or ungroup it
+    // Remove the existing bookmark and add it to the new collection
     const description = existingBookmark.description;
     this.bookmarkManager.removeBookmark(bookmarkUri, bookmarkLine);
     let newBookmark;
-    
-    if (selectedOption.id === 'ungrouped') {
-      newBookmark = this.bookmarkManager.addBookmark(bookmarkUri, bookmarkLine, undefined, description);
-    } else {
-      newBookmark = this.bookmarkManager.addBookmark(bookmarkUri, bookmarkLine, selectedOption.id, description);
-    }
+    newBookmark = this.bookmarkManager.addBookmark(bookmarkUri, bookmarkLine, selectedOption.id, description);
 
     if (newBookmark) {
-      const message = selectedOption.id === 'ungrouped' 
+      const message = selectedOption.id === 'ungrouped-bookmarks' 
         ? 'Bookmark moved to ungrouped'
         : `Bookmark moved to collection "${selectedOption.label}"`;
       vscode.window.showInformationMessage(message);
-      
       // Save to storage
       await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
-      
       // Refresh only the relevant parts of the tree
-      if (newBookmark.collectionId) {
-        // Bookmark was moved to a collection, refresh that collection
-        const collection = this.collectionManager.getCollection(newBookmark.collectionId);
-        if (collection) {
-          this.treeDataProvider.refreshCollection(collection);
-        }
-      } else {
-        // Bookmark was moved to ungrouped, refresh ungrouped section
-        this.treeDataProvider.refreshUngrouped();
+      const collection = this.collectionManager.getCollection(newBookmark.collectionId || 'ungrouped-bookmarks');
+      if (collection) {
+        this.treeDataProvider.refreshCollection(collection);
       }
-      
       // Also refresh root to update counts
       this.treeDataProvider.refreshRoot();
-      
       // Update decorations for the current editor if it's the same file
       const editor = vscode.window.activeTextEditor;
       if (editor && editor.document.uri.toString() === bookmarkUri) {

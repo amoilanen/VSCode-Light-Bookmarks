@@ -52,6 +52,18 @@
         "icon": "$(trash)"
       },
       {
+        "command": "lightBookmarks.moveCollectionUp",
+        "title": "Move collection up",
+        "category": "Light Bookmarks",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "lightBookmarks.moveCollectionDown",
+        "title": "Move collection down",
+        "category": "Light Bookmarks",
+        "icon": "$(arrow-down)"
+      },
+      {
         "command": "lightBookmarks.editBookmarkDescription",
         "title": "Edit description",
         "category": "Light Bookmarks",
@@ -164,6 +176,31 @@
           "command": "lightBookmarks.deleteBookmark",
           "group": "inline@3",
           "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-in-collection"
+        },
+        {
+          "command": "lightBookmarks.deleteCollection",
+          "group": "inline@1",
+          "when": "view == lightBookmarks.bookmarksView && viewItem == collection"
+        },
+        {
+          "command": "lightBookmarks.moveCollectionUp",
+          "group": "inline@2",
+          "when": "view == lightBookmarks.bookmarksView && viewItem == collection"
+        },
+        {
+          "command": "lightBookmarks.moveCollectionDown",
+          "group": "inline@3",
+          "when": "view == lightBookmarks.bookmarksView && viewItem == collection"
+        },
+        {
+          "command": "lightBookmarks.moveCollectionUp",
+          "group": "inline@2",
+          "when": "view == lightBookmarks.bookmarksView && viewItem == ungrouped-collection"
+        },
+        {
+          "command": "lightBookmarks.moveCollectionDown",
+          "group": "inline@3",
+          "when": "view == lightBookmarks.bookmarksView && viewItem == ungrouped-collection"
         }
       ],
       "commandPalette": [

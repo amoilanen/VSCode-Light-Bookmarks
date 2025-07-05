@@ -61,11 +61,7 @@ export class ToggleBookmarkCommand {
           if (collection) {
             this.treeDataProvider.refreshCollection(collection);
           }
-        } else {
-          // Bookmark was removed from ungrouped, refresh ungrouped section
-          this.treeDataProvider.refreshUngrouped();
         }
-        
         // Also refresh root to update counts
         this.treeDataProvider.refreshRoot();
       }
@@ -87,11 +83,7 @@ export class ToggleBookmarkCommand {
           if (collection) {
             this.treeDataProvider.refreshCollection(collection);
           }
-        } else {
-          // Bookmark was added to ungrouped, refresh ungrouped section
-          this.treeDataProvider.refreshUngrouped();
         }
-        
         // Also refresh root to update counts
         this.treeDataProvider.refreshRoot();
       }

@@ -4,6 +4,7 @@ import { BookmarkManager } from '../../services/BookmarkManager';
 import { StorageService } from '../../services/StorageService';
 import { BookmarkTreeDataProvider } from '../../providers/BookmarkTreeDataProvider';
 import { BookmarkDecorationProvider } from '../../providers/BookmarkDecorationProvider';
+import { Collection } from '../../models/Collection';
 import * as vscode from 'vscode';
 
 describe('DeleteCollectionCommand', () => {
@@ -16,7 +17,7 @@ describe('DeleteCollectionCommand', () => {
 
   beforeEach(() => {
     collectionManager = new CollectionManager();
-    bookmarkManager = new BookmarkManager();
+    bookmarkManager = new BookmarkManager(collectionManager);
     storageService = {
       saveBookmarks: jest.fn().mockResolvedValue(undefined),
       saveCollections: jest.fn().mockResolvedValue(undefined)
@@ -53,15 +54,20 @@ describe('DeleteCollectionCommand', () => {
   });
 
   describe('execute', () => {
-    it('should prevent deletion of the "Ungrouped" collection', async () => {
+    it('should prevent deletion of empty "Ungrouped" collection', async () => {
+      // Arrange - create the ungrouped collection
+      const ungrouped = new Collection('Ungrouped', 'workspace', 0);
+      Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
+      collectionManager.addCollection(ungrouped);
+
       // Act
       await command.execute('ungrouped-bookmarks');
 
       // Assert
-      expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
-        'The "Ungrouped" collection cannot be deleted'
+      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
+        'The "Ungrouped" collection is empty and cannot be deleted'
       );
-      expect(collectionManager.getAllCollections()).toHaveLength(0);
+      expect(collectionManager.getAllCollections()).toHaveLength(1);
     });
 
     it('should delete an empty collection immediately without confirmation', async () => {
