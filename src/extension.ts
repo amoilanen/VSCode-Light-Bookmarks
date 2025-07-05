@@ -90,12 +90,11 @@ export class ExtensionManager {
       }
     }
 
-    // Register tree data provider with drag and drop support
+    // Register tree data provider
     const treeView = vscode.window.createTreeView(
       'lightBookmarks.bookmarksView',
       {
-        treeDataProvider: this.treeDataProvider,
-        dragAndDropController: this.treeDataProvider
+        treeDataProvider: this.treeDataProvider
       }
     );
     this.disposables.push(treeView);

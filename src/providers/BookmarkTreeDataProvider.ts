@@ -88,7 +88,7 @@ export class BookmarkTreeItem extends vscode.TreeItem {
   }
 }
 
-export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem> {
+export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void> = new vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void>();
   readonly onDidChangeTreeData: vscode.Event<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
   
@@ -97,10 +97,6 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
   // Track expanded state for all tree levels
   private expandedCollections: Set<string> = new Set();
   private expandedBookmarks: Set<string> = new Set(); // key: `${uri}:${line}`
-
-  // Drag and drop support
-  readonly dropMimeTypes = ['application/vnd.code.tree.lightBookmarks.bookmarksView'];
-  readonly dragMimeTypes = ['application/vnd.code.tree.lightBookmarks.bookmarksView'];
 
   constructor(
     private bookmarkManager: BookmarkManager,
@@ -193,92 +189,6 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     } else {
       // No children for code line items
       return Promise.resolve([]);
-    }
-  }
-
-  // Drag and drop implementation
-  public async handleDrag(source: readonly (BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem)[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
-    // Only allow dragging collection items
-    const collectionItems = source.filter(item => item instanceof BookmarkTreeItem && (item as BookmarkTreeItem).collection) as BookmarkTreeItem[];
-    
-    if (collectionItems.length > 0) {
-      const collectionIds = collectionItems.map(item => (item as BookmarkTreeItem).collection!.id);
-      dataTransfer.set('application/vnd.code.tree.lightBookmarks.bookmarksView', new vscode.DataTransferItem(collectionIds));
-      
-      // Set drag image and effect
-      dataTransfer.set('text/plain', new vscode.DataTransferItem(
-        collectionItems.length === 1 
-          ? `Moving collection "${collectionItems[0].collection!.name}"`
-          : `Moving ${collectionItems.length} collections`
-      ));
-    }
-  }
-
-  public async handleDrop(target: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
-    const collectionIds = dataTransfer.get('application/vnd.code.tree.lightBookmarks.bookmarksView');
-    if (!collectionIds) {
-      return;
-    }
-
-    try {
-      const draggedCollectionIds = JSON.parse(collectionIds.value) as string[];
-      const currentWorkspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
-      const workspaceCollections = this.collectionManager.getCollectionsForWorkspace(currentWorkspaceId);
-      
-      // Handle dropping on a collection item
-      if (target instanceof BookmarkTreeItem && target.collection) {
-        const targetCollectionId = target.collection.id;
-        const targetIndex = workspaceCollections.findIndex(c => c.id === targetCollectionId);
-        
-        if (targetIndex === -1) {
-          return; // Target collection not found
-        }
-        
-        // Move each dragged collection to the position of the target collection
-        for (const draggedCollectionId of draggedCollectionIds) {
-          if (draggedCollectionId === targetCollectionId) {
-            continue; // Skip if dragging onto itself
-          }
-
-          const draggedCollection = this.collectionManager.getCollection(draggedCollectionId);
-          if (draggedCollection) {
-            // Move the dragged collection to the target position
-            this.collectionManager.moveCollectionToPosition(draggedCollectionId, targetIndex);
-          }
-        }
-      } 
-      // Handle dropping at root level (no target or target is not a collection)
-      else {
-        // Move each dragged collection to the end of the list
-        for (const draggedCollectionId of draggedCollectionIds) {
-          const draggedCollection = this.collectionManager.getCollection(draggedCollectionId);
-          if (draggedCollection) {
-            const newPosition = workspaceCollections.length - 1; // Move to end
-            this.collectionManager.moveCollectionToPosition(draggedCollectionId, newPosition);
-          }
-        }
-      }
-
-      // Save changes to storage if storage service is available
-      if (this.storageService) {
-        await this.storageService.saveCollections(this.collectionManager.getAllCollections());
-      }
-
-      // Refresh the tree view to reflect the changes
-      this.refreshRoot();
-      
-      // Show feedback to user
-      if (draggedCollectionIds.length === 1) {
-        const collection = this.collectionManager.getCollection(draggedCollectionIds[0]);
-        if (collection) {
-          vscode.window.showInformationMessage(`Collection "${collection.name}" moved`);
-        }
-      } else {
-        vscode.window.showInformationMessage(`${draggedCollectionIds.length} collections moved`);
-      }
-    } catch (error) {
-      console.error('Error handling drop:', error);
-      vscode.window.showErrorMessage('Failed to move collection(s)');
     }
   }
 
