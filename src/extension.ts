@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { BookmarkManager } from './services/BookmarkManager';
 import { CollectionManager } from './services/CollectionManager';
 import { StorageService } from './services/StorageService';
-import { BookmarkTreeDataProvider, BookmarkTreeItem } from './providers/BookmarkTreeDataProvider';
+import { BookmarkTreeDataProvider, BookmarkTreeItem, EmptyStateTreeItem } from './providers/BookmarkTreeDataProvider';
 import { BookmarkDecorationProvider } from './providers/BookmarkDecorationProvider';
 import { ToggleBookmarkCommand } from './commands/ToggleBookmarkCommand';
 

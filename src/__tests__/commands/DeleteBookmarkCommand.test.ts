@@ -14,6 +14,15 @@ jest.mock('vscode', () => ({
     showErrorMessage: jest.fn(),
     activeTextEditor: undefined,
   },
+  workspace: {
+    getConfiguration: jest.fn().mockReturnValue({
+      get: jest.fn().mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'showLineNumbers') return true;
+        if (key === 'maxBookmarksPerFile') return 100;
+        return defaultValue;
+      }),
+    }),
+  },
 }));
 
 describe('DeleteBookmarkCommand', () => {

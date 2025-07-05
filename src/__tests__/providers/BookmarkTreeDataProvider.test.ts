@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { BookmarkTreeDataProvider, BookmarkTreeItem, CodeLineTreeItem } from '../../providers/BookmarkTreeDataProvider';
+import { BookmarkTreeDataProvider, BookmarkTreeItem, CodeLineTreeItem, EmptyStateTreeItem } from '../../providers/BookmarkTreeDataProvider';
 import { BookmarkManager } from '../../services/BookmarkManager';
 import { CollectionManager } from '../../services/CollectionManager';
 import { Bookmark } from '../../models/Bookmark';
@@ -44,6 +44,13 @@ jest.mock('vscode', () => ({
         uri: { scheme: 'file', authority: '', path: '/workspace' },
       },
     ],
+    getConfiguration: jest.fn().mockReturnValue({
+      get: jest.fn().mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'showLineNumbers') return true;
+        if (key === 'maxBookmarksPerFile') return 100;
+        return defaultValue;
+      }),
+    }),
   },
   window: {
     createTreeView: jest.fn(),
@@ -76,7 +83,15 @@ describe('BookmarkTreeDataProvider', () => {
   });
 
   describe('getChildren', () => {
-    it('should return root items when no element is provided', async () => {
+    it('should return empty state when no bookmarks exist', async () => {
+      const children = await treeDataProvider.getChildren();
+      
+      expect(children).toHaveLength(1);
+      expect(children[0]).toBeInstanceOf(EmptyStateTreeItem);
+      expect((children[0] as EmptyStateTreeItem).label).toBe('No bookmarks added yet');
+    });
+
+    it('should return root items when bookmarks exist', async () => {
       // Use a URI that matches the workspace folder
       const bookmark = new Bookmark('file:///workspace/test.ts', 5);
       bookmarkManager.addBookmark(bookmark.uri, bookmark.line);
@@ -143,6 +158,19 @@ describe('BookmarkTreeDataProvider', () => {
       // Accept 0 (None) or undefined for collapsibleState due to mock
       expect([0, undefined]).toContain(treeItem.collapsibleState);
       expect(treeItem.contextValue).toBe('code-line');
+    });
+  });
+
+  describe('EmptyStateTreeItem', () => {
+    it('should create an empty state tree item with correct properties', () => {
+      const treeItem = new EmptyStateTreeItem();
+      
+      expect(treeItem.label).toBe('No bookmarks added yet');
+      expect(treeItem.tooltip).toBe('Click the bookmark icon in the gutter or use Ctrl+Shift+B to add your first bookmark');
+      expect(treeItem.contextValue).toBe('empty-state');
+      expect(treeItem.description).toBe('Use Ctrl+Shift+B to add bookmarks');
+      // Accept 0 (None) or undefined for collapsibleState due to mock
+      expect([0, undefined]).toContain(treeItem.collapsibleState);
     });
   });
 }); 

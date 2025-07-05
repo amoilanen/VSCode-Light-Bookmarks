@@ -48,19 +48,7 @@ export class DeleteBookmarkCommand {
       // Save to storage
       await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
       
-      // Refresh only the relevant parts of the tree
-      if (existingBookmark.collectionId) {
-        // Bookmark was removed from a collection, refresh that collection
-        const collection = this.collectionManager.getCollection(existingBookmark.collectionId);
-        if (collection) {
-          this.treeDataProvider.refreshCollection(collection);
-        }
-      } else {
-        // Bookmark was removed from ungrouped, refresh ungrouped section
-        this.treeDataProvider.refreshUngrouped();
-      }
-      
-      // Also refresh root to update counts
+      // Always refresh the root so the empty state is shown if needed
       this.treeDataProvider.refreshRoot();
       
       this.decorationProvider.updateDecorations();

@@ -4,6 +4,17 @@ import { CollectionManager } from '../services/CollectionManager';
 import { Bookmark } from '../models/Bookmark';
 import { Collection } from '../models/Collection';
 
+export class EmptyStateTreeItem extends vscode.TreeItem {
+  constructor() {
+    super('No bookmarks', vscode.TreeItemCollapsibleState.None);
+    this.tooltip = new vscode.MarkdownString('No bookmarks added yet\n\nAdd first bookmark with Ctrl+Alt+K in file editor');
+    this.tooltip.isTrusted = true;
+    this.iconPath = new vscode.ThemeIcon('info');
+    this.contextValue = 'empty-state';
+    this.description = 'Add first bookmark in file editor';
+  }
+}
+
 export class CodeLineTreeItem extends vscode.TreeItem {
   constructor(
     public readonly codeLine: string,
@@ -81,11 +92,11 @@ export class BookmarkTreeItem extends vscode.TreeItem {
   }
 }
 
-export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem | CodeLineTreeItem> {
-  private _onDidChangeTreeData: vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | undefined | null | void> = new vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | undefined | null | void>();
-  readonly onDidChangeTreeData: vscode.Event<BookmarkTreeItem | CodeLineTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem> {
+  private _onDidChangeTreeData: vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void> = new vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
   
-  private treeView: vscode.TreeView<BookmarkTreeItem | CodeLineTreeItem> | undefined;
+  private treeView: vscode.TreeView<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem> | undefined;
 
   // Track expanded state for all tree levels
   private expandedCollections: Set<string> = new Set();
@@ -96,7 +107,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     private collectionManager: CollectionManager
   ) {}
 
-  public setTreeView(treeView: vscode.TreeView<BookmarkTreeItem | CodeLineTreeItem>): void {
+  public setTreeView(treeView: vscode.TreeView<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem>): void {
     this.treeView = treeView;
   }
 
@@ -177,11 +188,11 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     this._onDidChangeTreeData.fire(ungroupedItem);
   }
 
-  public getTreeItem(element: BookmarkTreeItem | CodeLineTreeItem): vscode.TreeItem {
+  public getTreeItem(element: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem): vscode.TreeItem {
     return element;
   }
 
-  public getChildren(element?: BookmarkTreeItem | CodeLineTreeItem): Thenable<(BookmarkTreeItem | CodeLineTreeItem)[]> {
+  public getChildren(element?: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem): Thenable<(BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem)[]> {
     if (!element) {
       // Root level - show collections and ungrouped bookmarks
       return this.getRootItems();
@@ -197,8 +208,8 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     }
   }
 
-  public async getRootItems(): Promise<BookmarkTreeItem[]> {
-    const items: BookmarkTreeItem[] = [];
+  public async getRootItems(): Promise<(BookmarkTreeItem | EmptyStateTreeItem)[]> {
+    const items: (BookmarkTreeItem | EmptyStateTreeItem)[] = [];
     const currentWorkspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
     const collections = this.collectionManager.getCollectionsForWorkspace(currentWorkspaceId);
     const allBookmarks = this.bookmarkManager.getAllBookmarks();
@@ -206,6 +217,14 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     // Filter bookmarks to only include those from the current workspace
     const workspaceBookmarks = allBookmarks.filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
     const ungroupedBookmarks = workspaceBookmarks.filter(b => !b.collectionId);
+
+    // Check if there are any bookmarks in the current workspace
+    const hasAnyBookmarks = workspaceBookmarks.length > 0;
+
+    // If no bookmarks exist, show empty state
+    if (!hasAnyBookmarks) {
+      return [new EmptyStateTreeItem()];
+    }
 
     // Add all collections for the current workspace (including empty ones)
     for (const collection of collections) {

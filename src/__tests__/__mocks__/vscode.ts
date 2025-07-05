@@ -9,7 +9,20 @@ export const window = {
 };
 
 export const workspace = {
-  onDidChangeTextDocument: jest.fn()
+  onDidChangeTextDocument: jest.fn(),
+  getConfiguration: jest.fn().mockReturnValue({
+    get: jest.fn().mockImplementation((key: string, defaultValue: any) => {
+      if (key === 'showLineNumbers') return true;
+      if (key === 'maxBookmarksPerFile') return 100;
+      return defaultValue;
+    }),
+  }),
+  workspaceFolders: [
+    {
+      uri: { scheme: 'file', authority: '', path: '/workspace' },
+    },
+  ],
+  openTextDocument: jest.fn(),
 };
 
 export const commands = {
