@@ -23,7 +23,6 @@
           "default": true,
           "description": "Show line numbers in the bookmarks view"
         },
-
         "lightBookmarks.maxBookmarksPerFile": {
           "type": "number",
           "default": 100,
@@ -213,7 +212,6 @@
         {
           "command": "lightBookmarks.createCollection"
         },
-
         {
           "command": "lightBookmarks.addBookmarkToCollection"
         },
@@ -242,7 +240,7 @@
     "@types/node": "18.x",
     "@types/uuid": "^9.0.0",
     "@types/vscode": "^1.74.0",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.42.0",
     "eslint": "^8.26.0",
     "jest": "^29.5.0",

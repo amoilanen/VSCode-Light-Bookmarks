@@ -72,9 +72,18 @@ export class ExtensionManager {
       if (!collectionsByWorkspace[ws]) collectionsByWorkspace[ws] = [];
       collectionsByWorkspace[ws].push(restoredCollection);
     });
+    
+    // Clean up any duplicate ungrouped collections that might exist
+    this.collectionManager.cleanupDuplicateUngroupedCollections();
     // Ensure ungrouped exists for each workspace
     for (const ws of workspaces) {
-      if (!this.collectionManager.hasCollectionForWorkspace('ungrouped-bookmarks', ws)) {
+      // Check if ungrouped collection exists by ID or name for this workspace
+      const hasUngrouped = this.collectionManager.getAllCollections().some(c => 
+        (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') && 
+        c.workspaceId === ws
+      );
+      
+      if (!hasUngrouped) {
         const ungrouped = new Collection('Ungrouped', ws, 0);
         Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
         this.collectionManager.addCollection(ungrouped);

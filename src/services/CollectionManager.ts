@@ -45,6 +45,23 @@ export class CollectionManager {
   }
 
   public addCollection(collection: Collection): void {
+    // Check for duplicates by ID first
+    const existingById = this.collections.find(c => c.id === collection.id);
+    if (existingById) {
+      return; // Collection with this ID already exists
+    }
+    
+    // For ungrouped collections, also check by name and workspace to prevent duplicates
+    if (collection.id === 'ungrouped-bookmarks' || collection.name === 'Ungrouped') {
+      const existingUngrouped = this.collections.find(c => 
+        (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') && 
+        c.workspaceId === collection.workspaceId
+      );
+      if (existingUngrouped) {
+        return; // Ungrouped collection for this workspace already exists
+      }
+    }
+    
     this.collections.push(collection);
   }
 
@@ -179,6 +196,48 @@ export class CollectionManager {
     Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
     this.collections.push(ungrouped);
     return ungrouped;
+  }
+
+  /**
+   * Clean up duplicate ungrouped collections
+   */
+  public cleanupDuplicateUngroupedCollections(): void {
+    const workspaces = new Set<string | undefined>();
+    
+    // Collect all workspace IDs
+    this.collections.forEach(c => {
+      if (c.workspaceId !== undefined) {
+        workspaces.add(c.workspaceId);
+      }
+    });
+    workspaces.add(undefined); // Also handle collections without workspace ID
+    
+    // For each workspace, keep only one ungrouped collection
+    workspaces.forEach(workspaceId => {
+      const ungroupedCollections = this.collections.filter(c => 
+        (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') && 
+        c.workspaceId === workspaceId
+      );
+      
+      if (ungroupedCollections.length > 1) {
+        // Keep the first one (preferably with the correct ID) and remove the rest
+        const toKeep = ungroupedCollections.find(c => c.id === 'ungrouped-bookmarks') || ungroupedCollections[0];
+        const toRemove = ungroupedCollections.filter(c => c !== toKeep);
+        
+        // Remove duplicates
+        toRemove.forEach(collection => {
+          const index = this.collections.indexOf(collection);
+          if (index > -1) {
+            this.collections.splice(index, 1);
+          }
+        });
+        
+        // Ensure the kept collection has the correct ID
+        if (toKeep.id !== 'ungrouped-bookmarks') {
+          Object.defineProperty(toKeep, 'id', { value: 'ungrouped-bookmarks', writable: false });
+        }
+      }
+    });
   }
 
   /**

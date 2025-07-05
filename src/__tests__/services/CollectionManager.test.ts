@@ -437,4 +437,87 @@ describe('CollectionManager', () => {
       expect(success).toBe(true);
     });
   });
+
+  describe('cleanupDuplicateUngroupedCollections', () => {
+    it('should remove duplicate ungrouped collections for the same workspace', () => {
+      const workspaceId = 'file:///workspace1';
+      
+      // Create multiple ungrouped collections for the same workspace
+      const ungrouped1 = new Collection('Ungrouped', workspaceId, 0);
+      Object.defineProperty(ungrouped1, 'id', { value: 'ungrouped-bookmarks', writable: false });
+      
+      const ungrouped2 = new Collection('Ungrouped', workspaceId, 10);
+      Object.defineProperty(ungrouped2, 'id', { value: 'some-other-id', writable: false });
+      
+      const ungrouped3 = new Collection('Ungrouped', workspaceId, 20);
+      Object.defineProperty(ungrouped3, 'id', { value: 'another-id', writable: false });
+      
+      // Add collections directly to the internal array to bypass duplicate prevention
+      (collectionManager as any).collections.push(ungrouped1, ungrouped2, ungrouped3);
+      
+      // Verify we have 3 ungrouped collections
+      expect(collectionManager.getAllCollections().filter(c => c.name === 'Ungrouped')).toHaveLength(3);
+      
+      // Clean up duplicates
+      collectionManager.cleanupDuplicateUngroupedCollections();
+      
+      // Should only have 1 ungrouped collection left
+      const remainingUngrouped = collectionManager.getAllCollections().filter(c => c.name === 'Ungrouped');
+      expect(remainingUngrouped).toHaveLength(1);
+      expect(remainingUngrouped[0].id).toBe('ungrouped-bookmarks');
+    });
+
+    it('should keep separate ungrouped collections for different workspaces', () => {
+      const workspace1 = 'file:///workspace1';
+      const workspace2 = 'file:///workspace2';
+      
+      // Create ungrouped collections for different workspaces
+      const ungrouped1 = new Collection('Ungrouped', workspace1, 0);
+      Object.defineProperty(ungrouped1, 'id', { value: 'ungrouped-bookmarks', writable: false });
+      
+      const ungrouped2 = new Collection('Ungrouped', workspace2, 0);
+      Object.defineProperty(ungrouped2, 'id', { value: 'ungrouped-bookmarks', writable: false });
+      
+      // Add collections directly to the internal array to bypass duplicate prevention
+      (collectionManager as any).collections.push(ungrouped1, ungrouped2);
+      
+      // Clean up duplicates
+      collectionManager.cleanupDuplicateUngroupedCollections();
+      
+      // Should still have 2 ungrouped collections (one for each workspace)
+      const remainingUngrouped = collectionManager.getAllCollections().filter(c => c.name === 'Ungrouped');
+      expect(remainingUngrouped).toHaveLength(2);
+    });
+
+    it('should not affect non-ungrouped collections', () => {
+      const workspaceId = 'file:///workspace1';
+      
+      // Create regular collections
+      const regular1 = collectionManager.createCollection('Regular 1', workspaceId);
+      const regular2 = collectionManager.createCollection('Regular 2', workspaceId);
+      
+      // Create duplicate ungrouped collections
+      const ungrouped1 = new Collection('Ungrouped', workspaceId, 0);
+      Object.defineProperty(ungrouped1, 'id', { value: 'ungrouped-bookmarks', writable: false });
+      
+      const ungrouped2 = new Collection('Ungrouped', workspaceId, 10);
+      Object.defineProperty(ungrouped2, 'id', { value: 'some-other-id', writable: false });
+      
+      // Add collections directly to the internal array to bypass duplicate prevention
+      (collectionManager as any).collections.push(ungrouped1, ungrouped2);
+      
+      const totalBefore = collectionManager.getAllCollections().length;
+      
+      // Clean up duplicates
+      collectionManager.cleanupDuplicateUngroupedCollections();
+      
+      // Should have removed 1 ungrouped collection
+      const totalAfter = collectionManager.getAllCollections().length;
+      expect(totalAfter).toBe(totalBefore - 1);
+      
+      // Regular collections should still exist
+      expect(collectionManager.getCollection(regular1!.id)).toBeDefined();
+      expect(collectionManager.getCollection(regular2!.id)).toBeDefined();
+    });
+  });
 }); 
