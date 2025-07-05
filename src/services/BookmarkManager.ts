@@ -37,6 +37,11 @@ export class BookmarkManager {
     }
 
     const bookmark = new Bookmark(uri, line, realCollectionId, description);
+    
+    // Assign order value based on existing bookmarks in the collection
+    const collectionBookmarks = this.getBookmarksByCollection(realCollectionId);
+    bookmark.order = collectionBookmarks.length * 10;
+    
     this.bookmarks.push(bookmark);
     this.notifyBookmarksChanged();
     return bookmark;
@@ -85,7 +90,14 @@ export class BookmarkManager {
   }
 
   public getBookmarksByCollection(collectionId: string): Bookmark[] {
-    return this.bookmarks.filter(b => b.collectionId === collectionId);
+    const bookmarks = this.bookmarks.filter(b => b.collectionId === collectionId);
+    // Sort by order, then by creation date for consistent ordering
+    return bookmarks.sort((a, b) => {
+      if (a.order !== b.order) {
+        return a.order - b.order;
+      }
+      return a.createdAt.getTime() - b.createdAt.getTime();
+    });
   }
 
   public getAllBookmarks(): Bookmark[] {
@@ -113,5 +125,63 @@ export class BookmarkManager {
     if (this.onBookmarksChanged) {
       this.onBookmarksChanged();
     }
+  }
+
+  public moveBookmarkUp(uri: string, line: number): boolean {
+    const bookmark = this.bookmarks.find(b => b.uri === uri && b.line === line);
+    if (!bookmark || !bookmark.collectionId) {
+      return false;
+    }
+
+    const collectionBookmarks = this.getBookmarksByCollection(bookmark.collectionId);
+    const currentIndex = collectionBookmarks.findIndex(b => b.uri === uri && b.line === line);
+    
+    if (currentIndex <= 0) {
+      return false; // Already at the top
+    }
+
+    // Swap order values
+    const previousBookmark = collectionBookmarks[currentIndex - 1];
+    const tempOrder = bookmark.order;
+    bookmark.order = previousBookmark.order;
+    previousBookmark.order = tempOrder;
+
+    // Re-normalize order values
+    collectionBookmarks.sort((a, b) => a.order - b.order);
+    collectionBookmarks.forEach((b, idx) => {
+      b.order = idx * 10;
+    });
+
+    this.notifyBookmarksChanged();
+    return true;
+  }
+
+  public moveBookmarkDown(uri: string, line: number): boolean {
+    const bookmark = this.bookmarks.find(b => b.uri === uri && b.line === line);
+    if (!bookmark || !bookmark.collectionId) {
+      return false;
+    }
+
+    const collectionBookmarks = this.getBookmarksByCollection(bookmark.collectionId);
+    const currentIndex = collectionBookmarks.findIndex(b => b.uri === uri && b.line === line);
+    
+    if (currentIndex === -1 || currentIndex >= collectionBookmarks.length - 1) {
+      return false; // Already at the bottom
+    }
+
+    // Swap order values
+    const nextBookmark = collectionBookmarks[currentIndex + 1];
+    const tempOrder = bookmark.order;
+    bookmark.order = nextBookmark.order;
+    nextBookmark.order = tempOrder;
+
+    // Re-normalize order values
+    collectionBookmarks.sort((a, b) => a.order - b.order);
+    collectionBookmarks.forEach((b, idx) => {
+      b.order = idx * 10;
+    });
+
+    this.notifyBookmarksChanged();
+    return true;
   }
 } 

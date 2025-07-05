@@ -163,9 +163,17 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
    * Refresh a specific collection and its bookmarks, preserving expanded state
    */
   public refreshCollection(collection: Collection): void {
+    // Get the current bookmarks to determine if the collection should be collapsible
+    const collectionBookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id).filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
+    
+    // Determine the collapsible state based on whether it was previously expanded
+    const collapsibleState = this.isCollectionExpanded(collection.id) 
+      ? vscode.TreeItemCollapsibleState.Expanded 
+      : (collectionBookmarks.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
+    
     const collectionItem = new BookmarkTreeItem(
       collection.name,
-      vscode.TreeItemCollapsibleState.Collapsed,
+      collapsibleState,
       undefined,
       collection
     );
@@ -226,7 +234,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
 
   private async getCollectionBookmarks(collection: Collection): Promise<BookmarkTreeItem[]> {
     const bookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id);
-    // Filter bookmarks to only include those from the current workspace
+    // Filter bookmarks to only include those from the current workspace, preserving order
     const workspaceBookmarks = bookmarks.filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
     return workspaceBookmarks.map(bookmark => {
       const fileName = this.getFileName(bookmark.uri);

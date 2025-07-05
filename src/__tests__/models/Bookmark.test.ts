@@ -38,6 +38,19 @@ describe('Bookmark', () => {
       expect(bookmark.collectionId).toBe(collectionId);
       expect(bookmark.description).toBe(description);
     });
+
+    it('should create a bookmark with order', () => {
+      const order = 5;
+      const bookmark = new Bookmark(mockUri, mockLine, undefined, undefined, order);
+
+      expect(bookmark.order).toBe(order);
+    });
+
+    it('should default order to 0 when not provided', () => {
+      const bookmark = new Bookmark(mockUri, mockLine);
+
+      expect(bookmark.order).toBe(0);
+    });
   });
 
   describe('equals', () => {
@@ -77,6 +90,7 @@ describe('Bookmark', () => {
         collectionId,
         description: '',
         createdAt: bookmark.createdAt.toISOString(),
+        order: 0,
       });
     });
 
@@ -94,6 +108,7 @@ describe('Bookmark', () => {
         collectionId,
         description,
         createdAt: bookmark.createdAt.toISOString(),
+        order: 0,
       });
     });
   });

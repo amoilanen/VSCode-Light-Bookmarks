@@ -50,4 +50,18 @@ export const EventEmitter = jest.fn().mockImplementation(() => ({
 
 export const Disposable = {
   from: jest.fn()
-}; 
+};
+
+export class TreeItem {
+  constructor(
+    public label: string,
+    public collapsibleState: any,
+    public bookmark?: any,
+    public collection?: any
+  ) {}
+}
+
+export class MarkdownString {
+  constructor(public value: string) {}
+  isTrusted = false;
+} 

@@ -1,7 +1,3 @@
-- Moving bookmarks and collections:
-    - Allow to move collections up and down in the tree view - DONE
-    - Allow to move bookmarks up and down in the tree view inside the same collection
-
 - Support jumping to bookmarks in the file editor
   - Ctrl+Alt+N for next bookmark or menu item
   - Ctrl+Alt+P for previous bookmark or menu item
@@ -47,3 +43,7 @@
   "zh-CN",      // Chinese (Simplified)
   "zh-TW"       // Chinese (Traditional)
 ]
+
+- Add more tests for the extension, cover uncovered modules
+
+- Publish the extension to the marketplace for VS Code and OSS Code

@@ -81,6 +81,18 @@
         "icon": "$(trash)"
       },
       {
+        "command": "lightBookmarks.moveBookmarkUp",
+        "title": "Move bookmark up",
+        "category": "Light Bookmarks",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "lightBookmarks.moveBookmarkDown",
+        "title": "Move bookmark down",
+        "category": "Light Bookmarks",
+        "icon": "$(arrow-down)"
+      },
+      {
         "command": "lightBookmarks.collapseAll",
         "title": "Collapse all",
         "category": "Light Bookmarks",
@@ -174,6 +186,16 @@
         {
           "command": "lightBookmarks.deleteBookmark",
           "group": "inline@3",
+          "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-in-collection"
+        },
+        {
+          "command": "lightBookmarks.moveBookmarkUp",
+          "group": "inline@4",
+          "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-in-collection"
+        },
+        {
+          "command": "lightBookmarks.moveBookmarkDown",
+          "group": "inline@5",
           "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-in-collection"
         },
         {
