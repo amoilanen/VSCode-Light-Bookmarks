@@ -1,5 +1,23 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 out/
+dist/
+*.js.map
+
+# Coverage reports
 coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files
+package-lock.json
+
+# VSCode extension package
 *.vsix
-package-lock.json 
+
+# Markdown files (optional - remove if you want to format markdown)
+*.md 
