@@ -49,8 +49,6 @@ export class ToggleBookmarkCommand {
       // Remove existing bookmark
       const success = this.bookmarkManager.removeBookmark(uri, line);
       if (success) {
-        vscode.window.showInformationMessage(`Bookmark removed from line ${line}`);
-        
         // Save to storage
         await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
         
@@ -71,8 +69,6 @@ export class ToggleBookmarkCommand {
       const bookmark = this.bookmarkManager.addBookmark(uri, line, undefined, description);
       
       if (bookmark) {
-        vscode.window.showInformationMessage(`Bookmark added at line ${line}`);
-        
         // Save to storage
         await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
         

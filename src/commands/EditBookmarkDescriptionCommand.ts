@@ -76,8 +76,6 @@ export class EditBookmarkDescriptionCommand {
       
       // Refresh the tree view to show updated description
       this.treeDataProvider.refresh();
-      
-      vscode.window.showInformationMessage('Bookmark description updated successfully');
     } else {
       vscode.window.showErrorMessage('Failed to update bookmark description');
     }

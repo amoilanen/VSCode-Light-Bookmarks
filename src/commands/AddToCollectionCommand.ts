@@ -57,10 +57,6 @@ export class AddToCollectionCommand {
     newBookmark = this.bookmarkManager.addBookmark(uri, line, selectedOption.id, description);
 
     if (newBookmark) {
-      const message = selectedOption.id === 'ungrouped-bookmarks' 
-        ? 'Bookmark moved to ungrouped'
-        : `Bookmark added to collection "${selectedOption.label}"`;
-      vscode.window.showInformationMessage(message);
       // Save to storage
       await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
       // Refresh only the relevant parts of the tree

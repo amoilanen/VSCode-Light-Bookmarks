@@ -1,12 +1,6 @@
-- Support jumping to bookmarks (the corresponding line should be shown navigated to in the file editor)
-  - Ctrl+Alt+N for next bookmark or menu item in the file editor context menu
-  - Ctrl+Alt+P for previous bookmark or menu item in the file editor context menu
-
-- Do not show the notification "Bookmark added at line", it is already obvious from the visual appearance
+- Add eslint and prettier, fix all the warnings and errors, format code
 
 - Allow to export and import the bookmarks as JSON, this might be useful for sharing bookmarks with others
-
-- Add eslint and prettier, fix all the warnings and errors
 
 - Localization for
 [

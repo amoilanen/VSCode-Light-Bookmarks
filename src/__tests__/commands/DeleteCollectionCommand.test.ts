@@ -54,7 +54,7 @@ describe('DeleteCollectionCommand', () => {
   });
 
   describe('execute', () => {
-    it('should prevent deletion of empty "Ungrouped" collection', async () => {
+    it('should delete empty "Ungrouped" collection immediately', async () => {
       // Arrange - create the ungrouped collection
       const ungrouped = new Collection('Ungrouped', 'workspace', 0);
       Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
@@ -63,11 +63,12 @@ describe('DeleteCollectionCommand', () => {
       // Act
       await command.execute('ungrouped-bookmarks');
 
-      // Assert
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
-        'The "Ungrouped" collection is empty and cannot be deleted'
-      );
-      expect(collectionManager.getAllCollections()).toHaveLength(1);
+      // Assert - ungrouped collection should be deleted immediately when empty
+      expect(vscode.window.showWarningMessage).not.toHaveBeenCalled();
+      expect(collectionManager.getCollection('ungrouped-bookmarks')).toBeUndefined();
+      expect(storageService.saveCollections).toHaveBeenCalled();
+      expect(treeDataProvider.refreshRoot).toHaveBeenCalled();
+      expect(decorationProvider.updateDecorations).toHaveBeenCalled();
     });
 
     it('should delete an empty collection immediately without confirmation', async () => {
@@ -82,9 +83,6 @@ describe('DeleteCollectionCommand', () => {
       // Assert
       expect(vscode.window.showWarningMessage).not.toHaveBeenCalled();
       expect(collectionManager.getCollection(collection.id)).toBeUndefined();
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
-        'Collection "Test Collection" deleted successfully'
-      );
       expect(storageService.saveCollections).toHaveBeenCalled();
       expect(treeDataProvider.refreshRoot).toHaveBeenCalled();
       expect(decorationProvider.updateDecorations).toHaveBeenCalled();
@@ -120,9 +118,6 @@ describe('DeleteCollectionCommand', () => {
       );
       expect(collectionManager.getCollection(collection.id)).toBeUndefined();
       expect(bookmarkManager.getBookmark('file:///test.ts', 10)).toBeUndefined();
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
-        'Collection "Test Collection" deleted successfully'
-      );
       expect(storageService.saveBookmarks).toHaveBeenCalled();
       expect(storageService.saveCollections).toHaveBeenCalled();
       expect(treeDataProvider.refreshRoot).toHaveBeenCalled();

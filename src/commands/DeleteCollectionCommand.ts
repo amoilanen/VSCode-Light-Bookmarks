@@ -26,12 +26,13 @@ export class DeleteCollectionCommand {
     
     // Special handling for "Ungrouped" collection
     if (collectionId === 'ungrouped-bookmarks') {
+      // If empty, delete immediately (will be recreated when needed)
       if (bookmarksInCollection.length === 0) {
-        vscode.window.showInformationMessage('The "Ungrouped" collection is empty and cannot be deleted');
+        await this.deleteCollection(collectionId, collection);
         return;
       }
       
-      // For "Ungrouped" collection, ask for confirmation with different message
+      // For "Ungrouped" collection with bookmarks, ask for confirmation with different message
       const result = await vscode.window.showWarningMessage(
         'Deleting the "Ungrouped" collection will delete all ungrouped bookmarks. This action cannot be undone. Proceed?',
         { modal: true },
@@ -79,8 +80,6 @@ export class DeleteCollectionCommand {
   private async deleteCollection(collectionId: string, collection: { id: string; name: string }): Promise<void> {
     const deleted = this.collectionManager.deleteCollection(collectionId);
     if (deleted) {
-      vscode.window.showInformationMessage(`Collection "${collection.name}" deleted successfully`);
-      
       // Save to storage
       await Promise.all([
         this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks()),

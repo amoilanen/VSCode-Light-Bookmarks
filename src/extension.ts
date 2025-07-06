@@ -219,7 +219,6 @@ export class ExtensionManager {
         if (collection) {
           await this.storageService.saveCollections(this.collectionManager.getAllCollections());
           this.treeDataProvider.refreshRoot();
-          vscode.window.showInformationMessage(`Collection "${trimmedName}" created successfully`);
         } else {
           vscode.window.showErrorMessage('Failed to create collection');
         }

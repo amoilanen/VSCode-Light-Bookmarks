@@ -43,8 +43,6 @@ export class DeleteBookmarkCommand {
     // Remove the bookmark
     const removed = this.bookmarkManager.removeBookmark(uri, line);
     if (removed) {
-      vscode.window.showInformationMessage(`Bookmark deleted from line ${line}`);
-      
       // Save to storage
       await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
       

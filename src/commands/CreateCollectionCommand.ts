@@ -23,8 +23,6 @@ export class CreateCollectionCommand {
     );
 
     if (collection) {
-      vscode.window.showInformationMessage(`Collection "${collectionName}" created successfully`);
-      
       // Save to storage
       await this.storageService.saveCollections(this.collectionManager.getAllCollections());
       
