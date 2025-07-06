@@ -22,6 +22,8 @@ import { MoveBookmarkUpCommand } from './commands/MoveBookmarkUpCommand';
 import { MoveBookmarkDownCommand } from './commands/MoveBookmarkDownCommand';
 import { GoToNextBookmarkCommand } from './commands/GoToNextBookmarkCommand';
 import { GoToPreviousBookmarkCommand } from './commands/GoToPreviousBookmarkCommand';
+import { ExportBookmarksCommand } from './commands/ExportBookmarksCommand';
+import { ImportBookmarksCommand } from './commands/ImportBookmarksCommand';
 
 export class ExtensionManager {
   private bookmarkManager: BookmarkManager;
@@ -453,6 +455,35 @@ export class ExtensionManager {
       }
     );
     this.disposables.push(goToPreviousBookmarkCommand);
+
+    // Export bookmarks command
+    const exportBookmarksCommand = vscode.commands.registerCommand(
+      'lightBookmarks.exportBookmarks',
+      async () => {
+        const command = new ExportBookmarksCommand(
+          this.bookmarkManager,
+          this.collectionManager
+        );
+        await command.execute();
+      }
+    );
+    this.disposables.push(exportBookmarksCommand);
+
+    // Import bookmarks command
+    const importBookmarksCommand = vscode.commands.registerCommand(
+      'lightBookmarks.importBookmarks',
+      async () => {
+        const command = new ImportBookmarksCommand(
+          this.bookmarkManager,
+          this.collectionManager,
+          this.storageService,
+          this.treeDataProvider,
+          this.decorationProvider
+        );
+        await command.execute();
+      }
+    );
+    this.disposables.push(importBookmarksCommand);
   }
 
   private registerEventListeners(): void {

@@ -113,6 +113,18 @@
         "command": "lightBookmarks.goToPreviousBookmark",
         "title": "Go to Previous Bookmark",
         "category": "Light Bookmarks"
+      },
+      {
+        "command": "lightBookmarks.exportBookmarks",
+        "title": "Export bookmarks",
+        "category": "Light Bookmarks",
+        "icon": "$(save)"
+      },
+      {
+        "command": "lightBookmarks.importBookmarks",
+        "title": "Import bookmarks",
+        "category": "Light Bookmarks",
+        "icon": "$(import)"
       }
     ],
     "keybindings": [
@@ -171,6 +183,18 @@
           "group": "navigation",
           "when": "view == lightBookmarks.bookmarksView",
           "icon": "$(add)"
+        },
+        {
+          "command": "lightBookmarks.exportBookmarks",
+          "group": "navigation",
+          "when": "view == lightBookmarks.bookmarksView",
+          "icon": "$(export)"
+        },
+        {
+          "command": "lightBookmarks.importBookmarks",
+          "group": "navigation",
+          "when": "view == lightBookmarks.bookmarksView",
+          "icon": "$(import)"
         },
         {
           "command": "lightBookmarks.collapseAll",
@@ -276,6 +300,12 @@
         },
         {
           "command": "lightBookmarks.goToPreviousBookmark"
+        },
+        {
+          "command": "lightBookmarks.exportBookmarks"
+        },
+        {
+          "command": "lightBookmarks.importBookmarks"
         }
       ]
     }

@@ -1,5 +1,3 @@
-- Allow to export and import the bookmarks as JSON, this might be useful for sharing bookmarks with others
-
 - Localization for
 [
   "ar",         // Arabic
@@ -39,3 +37,5 @@
 - Add more tests for the extension, cover uncovered modules
 
 - Publish the extension to the marketplace for VS Code and OSS Code
+  - Update README
+  - Generate CHANGELOG

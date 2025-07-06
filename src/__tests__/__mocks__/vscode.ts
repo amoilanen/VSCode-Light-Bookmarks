@@ -3,9 +3,14 @@ export const window = {
   showErrorMessage: jest.fn(),
   showWarningMessage: jest.fn(),
   showQuickPick: jest.fn(),
+  showSaveDialog: jest.fn(),
+  showOpenDialog: jest.fn(),
   activeTextEditor: null,
   onDidChangeActiveTextEditor: jest.fn(),
   createTreeView: jest.fn(),
+  createTextEditorDecorationType: jest.fn().mockReturnValue({
+    dispose: jest.fn(),
+  }),
 };
 
 export const workspace = {
@@ -19,18 +24,52 @@ export const workspace = {
   }),
   workspaceFolders: [
     {
-      uri: { scheme: 'file', authority: '', path: '/workspace' },
+      uri: {
+        scheme: 'file',
+        authority: '',
+        path: '/workspace',
+        toString: () => 'file:///workspace',
+      },
     },
   ],
   openTextDocument: jest.fn(),
+  fs: {
+    writeFile: jest.fn(),
+    readFile: jest.fn(),
+  },
 };
 
 export const commands = {
   registerCommand: jest.fn(),
+  executeCommand: jest.fn(),
+};
+
+export const extensions = {
+  getExtension: jest.fn().mockReturnValue({
+    extensionPath: '/mock/extension/path',
+    extensionUri: {
+      path: '/mock/extension/path',
+      toString: () => '/mock/extension/path',
+    },
+  }),
 };
 
 export const Uri = {
-  parse: jest.fn((uri: string) => ({ path: uri, toString: () => uri })),
+  parse: jest.fn((uri: string) => {
+    // Simple URI parsing for test purposes
+    const url = new URL(uri);
+    return {
+      scheme: url.protocol.slice(0, -1), // Remove the ':' at the end
+      authority: url.hostname,
+      path: url.pathname,
+      toString: () => uri,
+    };
+  }),
+  file: jest.fn((path: string) => ({ path, toString: () => `file://${path}` })),
+  joinPath: jest.fn((baseUri: any, ...paths: string[]) => ({
+    path: `${baseUri.path || baseUri}/${paths.join('/')}`,
+    toString: () => `${baseUri.toString()}/${paths.join('/')}`,
+  })),
 };
 
 export const Range = jest.fn();
