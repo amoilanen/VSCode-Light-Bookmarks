@@ -12,15 +12,19 @@ export class MoveCollectionDownCommand {
 
   public async execute(collectionId: string): Promise<void> {
     const success = this.collectionManager.moveCollectionDown(collectionId);
-    
+
     if (success) {
       // Save to storage
-      await this.storageService.saveCollections(this.collectionManager.getAllCollections());
-      
+      await this.storageService.saveCollections(
+        this.collectionManager.getAllCollections()
+      );
+
       // Refresh the tree view to reflect the new order
       this.treeDataProvider.refreshRoot();
     } else {
-      vscode.window.showInformationMessage('Collection is already at the bottom or cannot be moved');
+      vscode.window.showInformationMessage(
+        'Collection is already at the bottom or cannot be moved'
+      );
     }
   }
-} 
+}

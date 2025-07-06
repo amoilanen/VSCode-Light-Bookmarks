@@ -10,7 +10,9 @@ export class StorageService {
   }
 
   public async saveBookmarks(bookmarks: Bookmark[]): Promise<void> {
-    const bookmarkData: BookmarkJSON[] = bookmarks.map(bookmark => bookmark.toJSON());
+    const bookmarkData: BookmarkJSON[] = bookmarks.map(bookmark =>
+      bookmark.toJSON()
+    );
     await this.globalState.update('bookmarks', bookmarkData);
   }
 
@@ -20,12 +22,17 @@ export class StorageService {
   }
 
   public async saveCollections(collections: Collection[]): Promise<void> {
-    const collectionData: CollectionJSON[] = collections.map(collection => collection.toJSON());
+    const collectionData: CollectionJSON[] = collections.map(collection =>
+      collection.toJSON()
+    );
     await this.globalState.update('collections', collectionData);
   }
 
   public async loadCollections(): Promise<Collection[]> {
-    const collectionData: CollectionJSON[] = this.globalState.get('collections', []);
+    const collectionData: CollectionJSON[] = this.globalState.get(
+      'collections',
+      []
+    );
     return collectionData.map(data => Collection.fromJSON(data));
   }
 
@@ -33,4 +40,4 @@ export class StorageService {
     await this.globalState.update('bookmarks', []);
     await this.globalState.update('collections', []);
   }
-} 
+}

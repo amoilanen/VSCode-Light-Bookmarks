@@ -20,7 +20,7 @@ describe('DeleteCollectionCommand', () => {
     bookmarkManager = new BookmarkManager(collectionManager);
     storageService = {
       saveBookmarks: jest.fn().mockResolvedValue(undefined),
-      saveCollections: jest.fn().mockResolvedValue(undefined)
+      saveCollections: jest.fn().mockResolvedValue(undefined),
     } as unknown as StorageService;
     treeDataProvider = {
       refresh: jest.fn(),
@@ -37,7 +37,7 @@ describe('DeleteCollectionCommand', () => {
       isBookmarkExpanded: jest.fn(),
     } as unknown as BookmarkTreeDataProvider;
     decorationProvider = {
-      updateDecorations: jest.fn()
+      updateDecorations: jest.fn(),
     } as unknown as BookmarkDecorationProvider;
 
     command = new DeleteCollectionCommand(
@@ -57,7 +57,10 @@ describe('DeleteCollectionCommand', () => {
     it('should delete empty "Ungrouped" collection immediately', async () => {
       // Arrange - create the ungrouped collection
       const ungrouped = new Collection('Ungrouped', 'workspace', 0);
-      Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
+      Object.defineProperty(ungrouped, 'id', {
+        value: 'ungrouped-bookmarks',
+        writable: false,
+      });
       collectionManager.addCollection(ungrouped);
 
       // Act
@@ -65,7 +68,9 @@ describe('DeleteCollectionCommand', () => {
 
       // Assert - ungrouped collection should be deleted immediately when empty
       expect(vscode.window.showWarningMessage).not.toHaveBeenCalled();
-      expect(collectionManager.getCollection('ungrouped-bookmarks')).toBeUndefined();
+      expect(
+        collectionManager.getCollection('ungrouped-bookmarks')
+      ).toBeUndefined();
       expect(storageService.saveCollections).toHaveBeenCalled();
       expect(treeDataProvider.refreshRoot).toHaveBeenCalled();
       expect(decorationProvider.updateDecorations).toHaveBeenCalled();
@@ -93,7 +98,9 @@ describe('DeleteCollectionCommand', () => {
       await command.execute('non-existent-id');
 
       // Assert
-      expect(vscode.window.showErrorMessage).toHaveBeenCalledWith('Collection not found');
+      expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+        'Collection not found'
+      );
     });
 
     it('should handle collection with bookmarks - user confirms deletion', async () => {
@@ -103,9 +110,11 @@ describe('DeleteCollectionCommand', () => {
       if (!collection) return;
 
       bookmarkManager.addBookmark('file:///test.ts', 10, collection.id);
-      
+
       // Mock user confirmation
-      (vscode.window.showWarningMessage as jest.Mock).mockResolvedValue('Delete');
+      (vscode.window.showWarningMessage as jest.Mock).mockResolvedValue(
+        'Delete'
+      );
 
       // Act
       await command.execute(collection.id);
@@ -117,7 +126,9 @@ describe('DeleteCollectionCommand', () => {
         'Delete'
       );
       expect(collectionManager.getCollection(collection.id)).toBeUndefined();
-      expect(bookmarkManager.getBookmark('file:///test.ts', 10)).toBeUndefined();
+      expect(
+        bookmarkManager.getBookmark('file:///test.ts', 10)
+      ).toBeUndefined();
       expect(storageService.saveBookmarks).toHaveBeenCalled();
       expect(storageService.saveCollections).toHaveBeenCalled();
       expect(treeDataProvider.refreshRoot).toHaveBeenCalled();
@@ -131,9 +142,11 @@ describe('DeleteCollectionCommand', () => {
       if (!collection) return;
 
       bookmarkManager.addBookmark('file:///test.ts', 10, collection.id);
-      
+
       // Mock user cancellation
-      (vscode.window.showWarningMessage as jest.Mock).mockResolvedValue('Cancel');
+      (vscode.window.showWarningMessage as jest.Mock).mockResolvedValue(
+        'Cancel'
+      );
 
       // Act
       await command.execute(collection.id);
@@ -151,4 +164,4 @@ describe('DeleteCollectionCommand', () => {
       expect(decorationProvider.updateDecorations).not.toHaveBeenCalled();
     });
   });
-}); 
+});

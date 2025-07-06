@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
-import { BookmarkTreeDataProvider, BookmarkTreeItem, CodeLineTreeItem, EmptyStateTreeItem } from '../../providers/BookmarkTreeDataProvider';
+import {
+  BookmarkTreeDataProvider,
+  BookmarkTreeItem,
+  CodeLineTreeItem,
+  EmptyStateTreeItem,
+} from '../../providers/BookmarkTreeDataProvider';
 import { BookmarkManager } from '../../services/BookmarkManager';
 import { CollectionManager } from '../../services/CollectionManager';
 import { Bookmark } from '../../models/Bookmark';
@@ -59,7 +64,11 @@ jest.mock('vscode', () => ({
 }));
 
 // Patch the TreeItem mock to set collapsibleState
-(jest.requireMock('vscode').TreeItem as jest.Mock).mockImplementation(function(this: vscode.TreeItem, label: string, collapsibleState?: number) {
+(jest.requireMock('vscode').TreeItem as jest.Mock).mockImplementation(function (
+  this: vscode.TreeItem,
+  label: string,
+  collapsibleState?: number
+) {
   this.label = label;
   this.collapsibleState = collapsibleState;
 });
@@ -75,15 +84,25 @@ describe('BookmarkTreeDataProvider', () => {
     // Add the 'Ungrouped' collection that is always expected to exist
     const wsId = 'file:///workspace';
     const ungrouped = new Collection('Ungrouped', wsId, 0);
-    Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
+    Object.defineProperty(ungrouped, 'id', {
+      value: 'ungrouped-bookmarks',
+      writable: false,
+    });
     collectionManager.addCollection(ungrouped);
-    treeDataProvider = new BookmarkTreeDataProvider(bookmarkManager, collectionManager);
+    treeDataProvider = new BookmarkTreeDataProvider(
+      bookmarkManager,
+      collectionManager
+    );
     // Patch workspaceFolders to match the test URI
-    (vscode.workspace as unknown as { workspaceFolders: vscode.WorkspaceFolder[] }).workspaceFolders = [
-      { 
+    (
+      vscode.workspace as unknown as {
+        workspaceFolders: vscode.WorkspaceFolder[];
+      }
+    ).workspaceFolders = [
+      {
         uri: vscode.Uri.parse(wsId),
         name: 'workspace',
-        index: 0
+        index: 0,
       },
     ];
   });
@@ -91,7 +110,7 @@ describe('BookmarkTreeDataProvider', () => {
   describe('getChildren', () => {
     it('should return empty state when no bookmarks exist', async () => {
       const children = await treeDataProvider.getChildren();
-      
+
       expect(children).toHaveLength(1);
       expect(children[0]).toBeInstanceOf(EmptyStateTreeItem);
       expect((children[0] as EmptyStateTreeItem).label).toBe('No bookmarks');
@@ -99,12 +118,14 @@ describe('BookmarkTreeDataProvider', () => {
 
     it('should return root items when bookmarks exist', async () => {
       // Use a URI that matches the workspace folder
-      bookmarkManager.addBookmark('file:///workspace/test.ts', 5, 'ungrouped-bookmarks', 'desc');
-      // Debug: log all bookmarks and collections
-      console.log('Bookmarks:', bookmarkManager.getAllBookmarks());
-      console.log('Collections:', collectionManager.getAllCollections());
+      bookmarkManager.addBookmark(
+        'file:///workspace/test.ts',
+        5,
+        'ungrouped-bookmarks',
+        'desc'
+      );
       const children = await treeDataProvider.getChildren();
-      
+
       expect(children).toHaveLength(1);
       expect(children[0]).toBeInstanceOf(BookmarkTreeItem);
       expect((children[0] as BookmarkTreeItem).label).toBe('Ungrouped (1)');
@@ -122,13 +143,17 @@ describe('BookmarkTreeDataProvider', () => {
       const mockDocument = {
         lineAt: jest.fn().mockReturnValue({ text: 'const test = "hello";' }),
       };
-      (vscode.workspace.openTextDocument as jest.Mock).mockResolvedValue(mockDocument);
+      (vscode.workspace.openTextDocument as jest.Mock).mockResolvedValue(
+        mockDocument
+      );
 
       const children = await treeDataProvider.getChildren(bookmarkTreeItem);
-      
+
       expect(children).toHaveLength(1);
       expect(children[0]).toBeInstanceOf(CodeLineTreeItem);
-      expect((children[0] as CodeLineTreeItem).codeLine).toBe('const test = "hello";');
+      expect((children[0] as CodeLineTreeItem).codeLine).toBe(
+        'const test = "hello";'
+      );
       expect((children[0] as CodeLineTreeItem).lineNumber).toBe(5);
     });
 
@@ -141,13 +166,17 @@ describe('BookmarkTreeDataProvider', () => {
       );
 
       // Mock the workspace.openTextDocument to throw an error
-      (vscode.workspace.openTextDocument as jest.Mock).mockRejectedValue(new Error('File not found'));
+      (vscode.workspace.openTextDocument as jest.Mock).mockRejectedValue(
+        new Error('File not found')
+      );
 
       const children = await treeDataProvider.getChildren(bookmarkTreeItem);
-      
+
       expect(children).toHaveLength(1);
       expect(children[0]).toBeInstanceOf(CodeLineTreeItem);
-      expect((children[0] as CodeLineTreeItem).codeLine).toBe('Unable to read code line');
+      expect((children[0] as CodeLineTreeItem).codeLine).toBe(
+        'Unable to read code line'
+      );
       expect((children[0] as CodeLineTreeItem).lineNumber).toBe(5);
     });
   });
@@ -157,9 +186,9 @@ describe('BookmarkTreeDataProvider', () => {
       const codeLine = 'const test = "hello";';
       const lineNumber = 5;
       const bookmark = new Bookmark('file:///workspace/test.ts', lineNumber);
-      
+
       const treeItem = new CodeLineTreeItem(codeLine, lineNumber, bookmark);
-      
+
       expect(treeItem.codeLine).toBe(codeLine);
       expect(treeItem.lineNumber).toBe(lineNumber);
       expect(treeItem.bookmark).toBe(bookmark);
@@ -172,11 +201,12 @@ describe('BookmarkTreeDataProvider', () => {
   describe('EmptyStateTreeItem', () => {
     it('should create an empty state tree item with correct properties', () => {
       const treeItem = new EmptyStateTreeItem();
-      
+
       expect(treeItem.label).toBe('No bookmarks');
       expect(treeItem.tooltip).toEqual({
-        value: 'No bookmarks added yet\n\nAdd first bookmark with Ctrl+Alt+K in file editor',
-        isTrusted: true
+        value:
+          'No bookmarks added yet\n\nAdd first bookmark with Ctrl+Alt+K in file editor',
+        isTrusted: true,
       });
       expect(treeItem.contextValue).toBe('empty-state');
       expect(treeItem.description).toBe('Add first bookmark in file editor');
@@ -184,4 +214,4 @@ describe('BookmarkTreeDataProvider', () => {
       expect([0, undefined]).toContain(treeItem.collapsibleState);
     });
   });
-}); 
+});

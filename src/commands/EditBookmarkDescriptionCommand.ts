@@ -47,7 +47,9 @@ export class EditBookmarkDescriptionCommand {
     }
 
     // Get current description
-    const currentDescription = this.bookmarkManager.getBookmarkDescription(bookmarkUri, bookmarkLine) || '';
+    const currentDescription =
+      this.bookmarkManager.getBookmarkDescription(bookmarkUri, bookmarkLine) ||
+      '';
 
     // Show input box for editing description
     const newDescription = await vscode.window.showInputBox({
@@ -55,12 +57,12 @@ export class EditBookmarkDescriptionCommand {
       placeHolder: 'Enter bookmark description',
       prompt: 'Please enter a description for this bookmark',
       value: currentDescription,
-      validateInput: (value) => {
+      validateInput: value => {
         if (value && value.length > 500) {
           return 'Description cannot exceed 500 characters';
         }
         return null;
-      }
+      },
     });
 
     if (newDescription === undefined) {
@@ -68,16 +70,22 @@ export class EditBookmarkDescriptionCommand {
     }
 
     // Update the bookmark description
-    const success = this.bookmarkManager.updateBookmarkDescription(bookmarkUri, bookmarkLine, newDescription);
-    
+    const success = this.bookmarkManager.updateBookmarkDescription(
+      bookmarkUri,
+      bookmarkLine,
+      newDescription
+    );
+
     if (success) {
       // Save to storage
-      await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
-      
+      await this.storageService.saveBookmarks(
+        this.bookmarkManager.getAllBookmarks()
+      );
+
       // Refresh the tree view to show updated description
       this.treeDataProvider.refresh();
     } else {
       vscode.window.showErrorMessage('Failed to update bookmark description');
     }
   }
-} 
+}

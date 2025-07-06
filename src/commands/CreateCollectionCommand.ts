@@ -24,8 +24,10 @@ export class CreateCollectionCommand {
 
     if (collection) {
       // Save to storage
-      await this.storageService.saveCollections(this.collectionManager.getAllCollections());
-      
+      await this.storageService.saveCollections(
+        this.collectionManager.getAllCollections()
+      );
+
       // Refresh only the root level to show the new collection
       this.treeDataProvider.refreshRoot();
     } else {
@@ -41,7 +43,7 @@ export class CreateCollectionCommand {
     quickPick.canSelectMany = false;
     quickPick.ignoreFocusOut = true;
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       quickPick.onDidAccept(() => {
         const value = quickPick.value.trim();
         if (!value || value.length === 0) {
@@ -49,7 +51,9 @@ export class CreateCollectionCommand {
           return;
         }
         if (this.collectionManager.hasCollectionByName(value)) {
-          vscode.window.showErrorMessage('A collection with this name already exists');
+          vscode.window.showErrorMessage(
+            'A collection with this name already exists'
+          );
           return;
         }
         quickPick.hide();
@@ -63,4 +67,4 @@ export class CreateCollectionCommand {
       quickPick.show();
     });
   }
-} 
+}

@@ -33,7 +33,12 @@ describe('Bookmark', () => {
     it('should create a bookmark with collection and description', () => {
       const collectionId = 'test-collection';
       const description = 'Test description';
-      const bookmark = new Bookmark(mockUri, mockLine, collectionId, description);
+      const bookmark = new Bookmark(
+        mockUri,
+        mockLine,
+        collectionId,
+        description
+      );
 
       expect(bookmark.collectionId).toBe(collectionId);
       expect(bookmark.description).toBe(description);
@@ -41,7 +46,13 @@ describe('Bookmark', () => {
 
     it('should create a bookmark with order', () => {
       const order = 5;
-      const bookmark = new Bookmark(mockUri, mockLine, undefined, undefined, order);
+      const bookmark = new Bookmark(
+        mockUri,
+        mockLine,
+        undefined,
+        undefined,
+        order
+      );
 
       expect(bookmark.order).toBe(order);
     });
@@ -97,7 +108,12 @@ describe('Bookmark', () => {
     it('should serialize bookmark with description to JSON', () => {
       const collectionId = 'test-collection';
       const description = 'Test description';
-      const bookmark = new Bookmark(mockUri, mockLine, collectionId, description);
+      const bookmark = new Bookmark(
+        mockUri,
+        mockLine,
+        collectionId,
+        description
+      );
 
       const json = bookmark.toJSON();
 
@@ -164,4 +180,4 @@ describe('Bookmark', () => {
       expect(bookmark.description).toBe('');
     });
   });
-}); 
+});

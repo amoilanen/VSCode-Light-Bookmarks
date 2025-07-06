@@ -14,7 +14,10 @@ export class DeleteBookmarkCommand {
     private decorationProvider: BookmarkDecorationProvider
   ) {}
 
-  public async execute(bookmarkUri?: string, bookmarkLine?: number): Promise<void> {
+  public async execute(
+    bookmarkUri?: string,
+    bookmarkLine?: number
+  ): Promise<void> {
     let uri: string;
     let line: number;
 
@@ -36,7 +39,9 @@ export class DeleteBookmarkCommand {
     // Check if there's a bookmark at this location
     const existingBookmark = this.bookmarkManager.getBookmark(uri, line);
     if (!existingBookmark) {
-      vscode.window.showInformationMessage('No bookmark found at the specified location.');
+      vscode.window.showInformationMessage(
+        'No bookmark found at the specified location.'
+      );
       return;
     }
 
@@ -44,14 +49,16 @@ export class DeleteBookmarkCommand {
     const removed = this.bookmarkManager.removeBookmark(uri, line);
     if (removed) {
       // Save to storage
-      await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
-      
+      await this.storageService.saveBookmarks(
+        this.bookmarkManager.getAllBookmarks()
+      );
+
       // Always refresh the root so the empty state is shown if needed
       this.treeDataProvider.refreshRoot();
-      
+
       this.decorationProvider.updateDecorations();
     } else {
       vscode.window.showErrorMessage('Failed to delete bookmark');
     }
   }
-} 
+}

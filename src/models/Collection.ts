@@ -36,8 +36,14 @@ export class Collection {
   public static fromJSON(json: CollectionJSON): Collection {
     const collection = new Collection(json.name, json.workspaceId, json.order);
     // Override the generated id and createdAt with the stored values
-    Object.defineProperty(collection, 'id', { value: json.id, writable: false });
-    Object.defineProperty(collection, 'createdAt', { value: new Date(json.createdAt), writable: false });
+    Object.defineProperty(collection, 'id', {
+      value: json.id,
+      writable: false,
+    });
+    Object.defineProperty(collection, 'createdAt', {
+      value: new Date(json.createdAt),
+      writable: false,
+    });
     return collection;
   }
-} 
+}

@@ -80,10 +80,7 @@ describe('StorageService', () => {
 
   describe('saveCollections', () => {
     it('should save collections to storage', async () => {
-      const collections = [
-        new Collection('Test 1'),
-        new Collection('Test 2'),
-      ];
+      const collections = [new Collection('Test 1'), new Collection('Test 2')];
 
       await storageService.saveCollections(collections);
 
@@ -128,4 +125,4 @@ describe('StorageService', () => {
       expect(mockGlobalState.update).toHaveBeenCalledWith('collections', []);
     });
   });
-}); 
+});

@@ -34,30 +34,45 @@ export class AddBookmarkToCollectionCommand {
     }
 
     // Check if there's already a bookmark at this location
-    const existingBookmark = this.bookmarkManager.getBookmark(bookmarkUri, bookmarkLine);
+    const existingBookmark = this.bookmarkManager.getBookmark(
+      bookmarkUri,
+      bookmarkLine
+    );
     if (!existingBookmark) {
-      vscode.window.showInformationMessage('No bookmark found at the specified location.');
+      vscode.window.showInformationMessage(
+        'No bookmark found at the specified location.'
+      );
       return;
     }
 
     // Get available collections (excluding the current one if bookmark is already in a collection)
-    const currentWorkspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
-    const allCollections = this.collectionManager.getCollectionsForWorkspace(currentWorkspaceId);
-    const availableCollections = allCollections.filter(collection => 
-      collection.id !== existingBookmark.collectionId
+    const currentWorkspaceId =
+      vscode.workspace.workspaceFolders?.[0]?.uri.toString();
+    const allCollections =
+      this.collectionManager.getCollectionsForWorkspace(currentWorkspaceId);
+    const availableCollections = allCollections.filter(
+      collection => collection.id !== existingBookmark.collectionId
     );
 
     // Show collection picker
-    const collectionOptions = availableCollections.map(c => ({ label: c.name, id: c.id }));
+    const collectionOptions = availableCollections.map(c => ({
+      label: c.name,
+      id: c.id,
+    }));
 
     if (collectionOptions.length === 0) {
-      vscode.window.showInformationMessage('No other collections available. Please create a collection first.');
+      vscode.window.showInformationMessage(
+        'No other collections available. Please create a collection first.'
+      );
       return;
     }
 
-    const selectedOption = await vscode.window.showQuickPick(collectionOptions, {
-      placeHolder: 'Select a collection to add the bookmark to'
-    });
+    const selectedOption = await vscode.window.showQuickPick(
+      collectionOptions,
+      {
+        placeHolder: 'Select a collection to add the bookmark to',
+      }
+    );
 
     if (!selectedOption) {
       return; // User cancelled
@@ -66,14 +81,22 @@ export class AddBookmarkToCollectionCommand {
     // Remove the existing bookmark and add it to the new collection
     const description = existingBookmark.description;
     this.bookmarkManager.removeBookmark(bookmarkUri, bookmarkLine);
-    let newBookmark;
-    newBookmark = this.bookmarkManager.addBookmark(bookmarkUri, bookmarkLine, selectedOption.id, description);
+    const newBookmark = this.bookmarkManager.addBookmark(
+      bookmarkUri,
+      bookmarkLine,
+      selectedOption.id,
+      description
+    );
 
     if (newBookmark) {
       // Save to storage
-      await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
+      await this.storageService.saveBookmarks(
+        this.bookmarkManager.getAllBookmarks()
+      );
       // Refresh only the relevant parts of the tree
-      const collection = this.collectionManager.getCollection(newBookmark.collectionId || 'ungrouped-bookmarks');
+      const collection = this.collectionManager.getCollection(
+        newBookmark.collectionId || 'ungrouped-bookmarks'
+      );
       if (collection) {
         this.treeDataProvider.refreshCollection(collection);
       }
@@ -86,4 +109,4 @@ export class AddBookmarkToCollectionCommand {
       }
     }
   }
-} 
+}

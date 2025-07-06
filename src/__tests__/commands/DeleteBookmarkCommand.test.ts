@@ -84,11 +84,14 @@ describe('DeleteBookmarkCommand', () => {
 
     it('should show error message when bookmark not found', async () => {
       const showInformationMessage = jest.fn();
-      (vscode.window.showInformationMessage as jest.Mock) = showInformationMessage;
+      (vscode.window.showInformationMessage as jest.Mock) =
+        showInformationMessage;
 
       await command.execute('file:///test.ts', 5);
 
-      expect(showInformationMessage).toHaveBeenCalledWith('No bookmark found at the specified location.');
+      expect(showInformationMessage).toHaveBeenCalledWith(
+        'No bookmark found at the specified location.'
+      );
       expect(storageService.saveBookmarks).not.toHaveBeenCalled();
     });
 
@@ -113,4 +116,4 @@ describe('DeleteBookmarkCommand', () => {
       expect(decorationProvider.updateDecorations).not.toHaveBeenCalled();
     });
   });
-}); 
+});

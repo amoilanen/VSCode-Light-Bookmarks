@@ -36,7 +36,11 @@ describe('BookmarkManager', () => {
 
     it('should add bookmark with collection', () => {
       const collection = new Collection('Test');
-      const bookmark = bookmarkManager.addBookmark(mockUri, mockLine, collection.id);
+      const bookmark = bookmarkManager.addBookmark(
+        mockUri,
+        mockLine,
+        collection.id
+      );
 
       expect(bookmark).not.toBeNull();
       if (bookmark) {
@@ -91,7 +95,9 @@ describe('BookmarkManager', () => {
     });
 
     it('should return empty array for non-existent uri', () => {
-      const bookmarks = bookmarkManager.getBookmarksByUri('file:///nonexistent/file.ts');
+      const bookmarks = bookmarkManager.getBookmarksByUri(
+        'file:///nonexistent/file.ts'
+      );
 
       expect(bookmarks).toHaveLength(0);
     });
@@ -128,18 +134,20 @@ describe('BookmarkManager', () => {
       // Arrange - start with empty collection manager
       const collectionManager = new CollectionManager();
       const bookmarkManager = new BookmarkManager(collectionManager);
-      
+
       // Act - add a bookmark without specifying collection
       const bookmark = bookmarkManager.addBookmark(mockUri, mockLine);
-      
+
       // Assert
       expect(bookmark).not.toBeNull();
       if (bookmark) {
         expect(bookmark.collectionId).toBe('ungrouped-bookmarks');
       }
-      
+
       // Check that the ungrouped collection was created
-      const ungroupedCollection = collectionManager.getCollection('ungrouped-bookmarks');
+      const ungroupedCollection = collectionManager.getCollection(
+        'ungrouped-bookmarks'
+      );
       expect(ungroupedCollection).toBeDefined();
       expect(ungroupedCollection?.name).toBe('Ungrouped');
     });
@@ -148,21 +156,25 @@ describe('BookmarkManager', () => {
       // Arrange - start with empty collection manager
       const collectionManager = new CollectionManager();
       const bookmarkManager = new BookmarkManager(collectionManager);
-      
+
       // Act - add two bookmarks
       const bookmark1 = bookmarkManager.addBookmark(mockUri, 10);
       const bookmark2 = bookmarkManager.addBookmark(mockUri, 20);
-      
+
       // Assert
       expect(bookmark1).not.toBeNull();
       expect(bookmark2).not.toBeNull();
-      
+
       // Check that only one ungrouped collection exists
-      const ungroupedCollection = collectionManager.getCollection('ungrouped-bookmarks');
+      const ungroupedCollection = collectionManager.getCollection(
+        'ungrouped-bookmarks'
+      );
       expect(ungroupedCollection).toBeDefined();
-      
+
       const allCollections = collectionManager.getAllCollections();
-      const ungroupedCollections = allCollections.filter(c => c.id === 'ungrouped-bookmarks');
+      const ungroupedCollections = allCollections.filter(
+        c => c.id === 'ungrouped-bookmarks'
+      );
       expect(ungroupedCollections).toHaveLength(1);
     });
   });
@@ -187,9 +199,10 @@ describe('BookmarkManager', () => {
         const result = bookmarkManager.moveBookmarkUp(mockUri, 20); // Move bookmark3 up
 
         expect(result).toBe(true);
-        
+
         // Check that order values were swapped and normalized
-        const bookmarks = bookmarkManager.getBookmarksByCollection(collectionId);
+        const bookmarks =
+          bookmarkManager.getBookmarksByCollection(collectionId);
         expect(bookmarks[0].order).toBe(0); // bookmark1
         expect(bookmarks[1].order).toBe(10); // bookmark3 (moved up)
         expect(bookmarks[2].order).toBe(20); // bookmark2 (moved down)
@@ -243,9 +256,10 @@ describe('BookmarkManager', () => {
         const result = bookmarkManager.moveBookmarkDown(mockUri, 10); // Move bookmark1 down
 
         expect(result).toBe(true);
-        
+
         // Check that order values were swapped and normalized
-        const bookmarks = bookmarkManager.getBookmarksByCollection(collectionId);
+        const bookmarks =
+          bookmarkManager.getBookmarksByCollection(collectionId);
         expect(bookmarks[0].order).toBe(0); // bookmark2 (moved up)
         expect(bookmarks[1].order).toBe(10); // bookmark1 (moved down)
         expect(bookmarks[2].order).toBe(20); // bookmark3
@@ -292,7 +306,8 @@ describe('BookmarkManager', () => {
         bookmark2.order = 10;
         bookmark3.order = 0;
 
-        const bookmarks = bookmarkManager.getBookmarksByCollection(collectionId);
+        const bookmarks =
+          bookmarkManager.getBookmarksByCollection(collectionId);
 
         // Should be sorted by order (ascending)
         expect(bookmarks[0].order).toBe(0);
@@ -301,4 +316,4 @@ describe('BookmarkManager', () => {
       }
     });
   });
-}); 
+});

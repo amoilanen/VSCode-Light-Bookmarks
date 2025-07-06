@@ -4,7 +4,6 @@ import { CollectionManager } from '../services/CollectionManager';
 import { StorageService } from '../services/StorageService';
 import { BookmarkTreeDataProvider } from '../providers/BookmarkTreeDataProvider';
 import { BookmarkTreeItem } from '../providers/BookmarkTreeDataProvider';
-import { Collection } from '../models/Collection';
 
 export class MoveBookmarkUpCommand {
   constructor(
@@ -28,16 +27,23 @@ export class MoveBookmarkUpCommand {
       return;
     }
 
-    const success = this.bookmarkManager.moveBookmarkUp(bookmarkUri, bookmarkLine);
-    
+    const success = this.bookmarkManager.moveBookmarkUp(
+      bookmarkUri,
+      bookmarkLine
+    );
+
     if (success) {
       // Save to storage
-      await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
-      
+      await this.storageService.saveBookmarks(
+        this.bookmarkManager.getAllBookmarks()
+      );
+
       // Refresh the root to reflect the new order while preserving expanded state
       this.treeDataProvider.refreshRoot();
     } else {
-      vscode.window.showInformationMessage('Bookmark is already at the top or cannot be moved');
+      vscode.window.showInformationMessage(
+        'Bookmark is already at the top or cannot be moved'
+      );
     }
   }
-} 
+}

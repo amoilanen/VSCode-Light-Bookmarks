@@ -15,13 +15,21 @@ export class BookmarkDecorationProvider {
 
   private initializeDecorations(): void {
     // Get extension path for the bookmark icons
-    const extension = vscode.extensions.getExtension('light-bookmarks.vscode-light-bookmarks');
-    const filledIconPath = extension ? vscode.Uri.joinPath(extension.extensionUri, 'resources', 'bookmark-icon-filled.svg') : undefined;
-    
+    const extension = vscode.extensions.getExtension(
+      'light-bookmarks.vscode-light-bookmarks'
+    );
+    const filledIconPath = extension
+      ? vscode.Uri.joinPath(
+          extension.extensionUri,
+          'resources',
+          'bookmark-icon-filled.svg'
+        )
+      : undefined;
+
     // Create gutter decoration type for bookmark icons (use filled icon for editor)
     this.gutterDecorationType = vscode.window.createTextEditorDecorationType({
       gutterIconPath: filledIconPath,
-      gutterIconSize: 'contain'
+      gutterIconSize: 'contain',
     });
 
     this.disposables.push(this.gutterDecorationType);
@@ -41,14 +49,14 @@ export class BookmarkDecorationProvider {
   private updateEditorDecorations(editor: vscode.TextEditor): void {
     const uri = editor.document.uri.toString();
     const bookmarks = this.bookmarkManager.getBookmarksByUri(uri);
-    
+
     if (bookmarks.length === 0) {
       editor.setDecorations(this.gutterDecorationType, []);
       return;
     }
 
     const ranges: vscode.Range[] = [];
-    
+
     bookmarks.forEach(bookmark => {
       const line = bookmark.line - 1; // Convert to 0-based index
       if (line >= 0 && line < editor.document.lineCount) {
@@ -64,5 +72,3 @@ export class BookmarkDecorationProvider {
     this.disposables.forEach(disposable => disposable.dispose());
   }
 }
-
- 

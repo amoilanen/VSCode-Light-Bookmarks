@@ -143,4 +143,4 @@ describe('Collection', () => {
       expect(collection.order).toBe(order);
     });
   });
-}); 
+});

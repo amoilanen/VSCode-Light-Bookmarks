@@ -5,7 +5,7 @@ export const window = {
   showQuickPick: jest.fn(),
   activeTextEditor: null,
   onDidChangeActiveTextEditor: jest.fn(),
-  createTreeView: jest.fn()
+  createTreeView: jest.fn(),
 };
 
 export const workspace = {
@@ -26,11 +26,11 @@ export const workspace = {
 };
 
 export const commands = {
-  registerCommand: jest.fn()
+  registerCommand: jest.fn(),
 };
 
 export const Uri = {
-  parse: jest.fn((uri: string) => ({ path: uri, toString: () => uri }))
+  parse: jest.fn((uri: string) => ({ path: uri, toString: () => uri })),
 };
 
 export const Range = jest.fn();
@@ -38,18 +38,18 @@ export const Range = jest.fn();
 export const TreeItemCollapsibleState = {
   None: 0,
   Collapsed: 1,
-  Expanded: 2
+  Expanded: 2,
 };
 
 export const ThemeIcon = jest.fn();
 
 export const EventEmitter = jest.fn().mockImplementation(() => ({
   fire: jest.fn(),
-  event: jest.fn()
+  event: jest.fn(),
 }));
 
 export const Disposable = {
-  from: jest.fn()
+  from: jest.fn(),
 };
 
 export class TreeItem {
@@ -64,4 +64,4 @@ export class TreeItem {
 export class MarkdownString {
   constructor(public value: string) {}
   isTrusted = false;
-} 
+}

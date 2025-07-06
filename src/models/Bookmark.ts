@@ -19,7 +19,13 @@ export class Bookmark {
   public readonly createdAt: Date;
   public order: number;
 
-  constructor(uri: string, line: number, collectionId?: string, description?: string, order?: number) {
+  constructor(
+    uri: string,
+    line: number,
+    collectionId?: string,
+    description?: string,
+    order?: number
+  ) {
     this.id = uuidv4();
     this.uri = uri;
     this.line = line;
@@ -46,10 +52,19 @@ export class Bookmark {
   }
 
   public static fromJSON(json: BookmarkJSON): Bookmark {
-    const bookmark = new Bookmark(json.uri, json.line, json.collectionId, json.description, json.order);
+    const bookmark = new Bookmark(
+      json.uri,
+      json.line,
+      json.collectionId,
+      json.description,
+      json.order
+    );
     // Override the generated id and createdAt with the stored values
     Object.defineProperty(bookmark, 'id', { value: json.id, writable: false });
-    Object.defineProperty(bookmark, 'createdAt', { value: new Date(json.createdAt), writable: false });
+    Object.defineProperty(bookmark, 'createdAt', {
+      value: new Date(json.createdAt),
+      writable: false,
+    });
     return bookmark;
   }
-} 
+}

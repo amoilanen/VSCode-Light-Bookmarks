@@ -3,9 +3,14 @@ import { Collection } from '../models/Collection';
 export class CollectionManager {
   private collections: Collection[] = [];
 
-  public createCollection(name: string, workspaceId?: string): Collection | null {
+  public createCollection(
+    name: string,
+    workspaceId?: string
+  ): Collection | null {
     // Check if collection with same name already exists in the same workspace
-    const existingCollection = this.collections.find(c => c.name === name && c.workspaceId === workspaceId);
+    const existingCollection = this.collections.find(
+      c => c.name === name && c.workspaceId === workspaceId
+    );
     if (existingCollection) {
       return null;
     }
@@ -40,7 +45,9 @@ export class CollectionManager {
   }
 
   public getCollectionsForWorkspace(workspaceId?: string): Collection[] {
-    const workspaceCollections = this.collections.filter(c => c.workspaceId === workspaceId);
+    const workspaceCollections = this.collections.filter(
+      c => c.workspaceId === workspaceId
+    );
     return workspaceCollections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
@@ -50,18 +57,22 @@ export class CollectionManager {
     if (existingById) {
       return; // Collection with this ID already exists
     }
-    
+
     // For ungrouped collections, also check by name and workspace to prevent duplicates
-    if (collection.id === 'ungrouped-bookmarks' || collection.name === 'Ungrouped') {
-      const existingUngrouped = this.collections.find(c => 
-        (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') && 
-        c.workspaceId === collection.workspaceId
+    if (
+      collection.id === 'ungrouped-bookmarks' ||
+      collection.name === 'Ungrouped'
+    ) {
+      const existingUngrouped = this.collections.find(
+        c =>
+          (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') &&
+          c.workspaceId === collection.workspaceId
       );
       if (existingUngrouped) {
         return; // Ungrouped collection for this workspace already exists
       }
     }
-    
+
     this.collections.push(collection);
   }
 
@@ -74,7 +85,9 @@ export class CollectionManager {
   }
 
   public hasCollectionForWorkspace(id: string, workspaceId?: string): boolean {
-    return this.collections.some(c => c.id === id && c.workspaceId === workspaceId);
+    return this.collections.some(
+      c => c.id === id && c.workspaceId === workspaceId
+    );
   }
 
   public hasCollectionByName(name: string): boolean {
@@ -91,10 +104,14 @@ export class CollectionManager {
     }
 
     // Get a sorted copy, but operate on the real objects
-    const workspaceCollections = this.collections.filter(c => c.workspaceId === collection.workspaceId);
+    const workspaceCollections = this.collections.filter(
+      c => c.workspaceId === collection.workspaceId
+    );
     workspaceCollections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    const currentIndex = workspaceCollections.findIndex(c => c.id === collectionId);
-    
+    const currentIndex = workspaceCollections.findIndex(
+      c => c.id === collectionId
+    );
+
     if (currentIndex <= 0) {
       return false; // Already at the top
     }
@@ -124,11 +141,18 @@ export class CollectionManager {
     }
 
     // Get a sorted copy, but operate on the real objects
-    const workspaceCollections = this.collections.filter(c => c.workspaceId === collection.workspaceId);
+    const workspaceCollections = this.collections.filter(
+      c => c.workspaceId === collection.workspaceId
+    );
     workspaceCollections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    const currentIndex = workspaceCollections.findIndex(c => c.id === collectionId);
-    
-    if (currentIndex === -1 || currentIndex >= workspaceCollections.length - 1) {
+    const currentIndex = workspaceCollections.findIndex(
+      c => c.id === collectionId
+    );
+
+    if (
+      currentIndex === -1 ||
+      currentIndex >= workspaceCollections.length - 1
+    ) {
       return false; // Already at the bottom
     }
 
@@ -150,16 +174,27 @@ export class CollectionManager {
   /**
    * Move a collection to a specific position
    */
-  public moveCollectionToPosition(collectionId: string, newPosition: number): boolean {
+  public moveCollectionToPosition(
+    collectionId: string,
+    newPosition: number
+  ): boolean {
     const collection = this.getCollection(collectionId);
     if (!collection) {
       return false;
     }
 
-    const workspaceCollections = this.getCollectionsForWorkspace(collection.workspaceId);
-    const currentIndex = workspaceCollections.findIndex(c => c.id === collectionId);
-    
-    if (currentIndex === -1 || newPosition < 0 || newPosition >= workspaceCollections.length) {
+    const workspaceCollections = this.getCollectionsForWorkspace(
+      collection.workspaceId
+    );
+    const currentIndex = workspaceCollections.findIndex(
+      c => c.id === collectionId
+    );
+
+    if (
+      currentIndex === -1 ||
+      newPosition < 0 ||
+      newPosition >= workspaceCollections.length
+    ) {
       return false;
     }
 
@@ -169,10 +204,10 @@ export class CollectionManager {
 
     // Remove the collection from its current position
     workspaceCollections.splice(currentIndex, 1);
-    
+
     // Insert it at the new position
     workspaceCollections.splice(newPosition, 0, collection);
-    
+
     // Update all order values to maintain consistency
     workspaceCollections.forEach((col, index) => {
       col.order = index * 10; // Use increments of 10 to allow for future insertions
@@ -186,14 +221,19 @@ export class CollectionManager {
    */
   public ensureUngroupedCollection(workspaceId?: string): Collection {
     // Look for existing ungrouped collection for this specific workspace
-    const existingUngrouped = this.collections.find(c => c.id === 'ungrouped-bookmarks' && c.workspaceId === workspaceId);
+    const existingUngrouped = this.collections.find(
+      c => c.id === 'ungrouped-bookmarks' && c.workspaceId === workspaceId
+    );
     if (existingUngrouped) {
       return existingUngrouped;
     }
 
     // Create the "Ungrouped" collection for this workspace if it doesn't exist
     const ungrouped = new Collection('Ungrouped', workspaceId, 0);
-    Object.defineProperty(ungrouped, 'id', { value: 'ungrouped-bookmarks', writable: false });
+    Object.defineProperty(ungrouped, 'id', {
+      value: 'ungrouped-bookmarks',
+      writable: false,
+    });
     this.collections.push(ungrouped);
     return ungrouped;
   }
@@ -203,7 +243,7 @@ export class CollectionManager {
    */
   public cleanupDuplicateUngroupedCollections(): void {
     const workspaces = new Set<string | undefined>();
-    
+
     // Collect all workspace IDs
     this.collections.forEach(c => {
       if (c.workspaceId !== undefined) {
@@ -211,19 +251,22 @@ export class CollectionManager {
       }
     });
     workspaces.add(undefined); // Also handle collections without workspace ID
-    
+
     // For each workspace, keep only one ungrouped collection
     workspaces.forEach(workspaceId => {
-      const ungroupedCollections = this.collections.filter(c => 
-        (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') && 
-        c.workspaceId === workspaceId
+      const ungroupedCollections = this.collections.filter(
+        c =>
+          (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') &&
+          c.workspaceId === workspaceId
       );
-      
+
       if (ungroupedCollections.length > 1) {
         // Keep the first one (preferably with the correct ID) and remove the rest
-        const toKeep = ungroupedCollections.find(c => c.id === 'ungrouped-bookmarks') || ungroupedCollections[0];
+        const toKeep =
+          ungroupedCollections.find(c => c.id === 'ungrouped-bookmarks') ||
+          ungroupedCollections[0];
         const toRemove = ungroupedCollections.filter(c => c !== toKeep);
-        
+
         // Remove duplicates
         toRemove.forEach(collection => {
           const index = this.collections.indexOf(collection);
@@ -231,10 +274,13 @@ export class CollectionManager {
             this.collections.splice(index, 1);
           }
         });
-        
+
         // Ensure the kept collection has the correct ID
         if (toKeep.id !== 'ungrouped-bookmarks') {
-          Object.defineProperty(toKeep, 'id', { value: 'ungrouped-bookmarks', writable: false });
+          Object.defineProperty(toKeep, 'id', {
+            value: 'ungrouped-bookmarks',
+            writable: false,
+          });
         }
       }
     });
@@ -248,9 +294,9 @@ export class CollectionManager {
     if (workspaceCollections.length === 0) {
       return 0;
     }
-    
+
     // Handle collections that might not have an order property (backward compatibility)
     const maxOrder = Math.max(...workspaceCollections.map(c => c.order ?? 0));
     return maxOrder + 10; // Use increments of 10 to allow for future insertions
   }
-} 
+}

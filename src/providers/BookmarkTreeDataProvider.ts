@@ -8,7 +8,9 @@ import { Collection } from '../models/Collection';
 export class EmptyStateTreeItem extends vscode.TreeItem {
   constructor() {
     super('No bookmarks', vscode.TreeItemCollapsibleState.None);
-    this.tooltip = new vscode.MarkdownString('No bookmarks added yet\n\nAdd first bookmark with Ctrl+Alt+K in file editor');
+    this.tooltip = new vscode.MarkdownString(
+      'No bookmarks added yet\n\nAdd first bookmark with Ctrl+Alt+K in file editor'
+    );
     this.tooltip.isTrusted = true;
     this.iconPath = new vscode.ThemeIcon('info');
     this.contextValue = 'empty-state';
@@ -24,11 +26,13 @@ export class CodeLineTreeItem extends vscode.TreeItem {
   ) {
     super(codeLine, vscode.TreeItemCollapsibleState.None);
     this.tooltip = `Line ${lineNumber}: ${codeLine}`;
-    
+
     // Only show line number in description if the setting is enabled
-    const showLineNumbers = vscode.workspace.getConfiguration('lightBookmarks').get<boolean>('showLineNumbers', true);
+    const showLineNumbers = vscode.workspace
+      .getConfiguration('lightBookmarks')
+      .get<boolean>('showLineNumbers', true);
     this.description = showLineNumbers ? `Line ${lineNumber}` : undefined;
-    
+
     this.contextValue = 'code-line';
     this.command = {
       command: 'vscode.open',
@@ -36,7 +40,12 @@ export class CodeLineTreeItem extends vscode.TreeItem {
       arguments: [
         vscode.Uri.parse(bookmark.uri),
         {
-          selection: new vscode.Range(bookmark.line - 1, 0, bookmark.line - 1, 0),
+          selection: new vscode.Range(
+            bookmark.line - 1,
+            0,
+            bookmark.line - 1,
+            0
+          ),
         },
       ],
     };
@@ -56,25 +65,40 @@ export class BookmarkTreeItem extends vscode.TreeItem {
       this.tooltip = `${bookmark.uri}:${bookmark.line}`;
       this.iconPath = new vscode.ThemeIcon('bookmark');
       // Set different context values based on whether bookmark is in a collection
-      this.contextValue = bookmark.collectionId ? 'bookmark-in-collection' : 'bookmark-ungrouped';
+      this.contextValue = bookmark.collectionId
+        ? 'bookmark-in-collection'
+        : 'bookmark-ungrouped';
       this.command = {
         command: 'vscode.open',
         title: 'Open Bookmark',
         arguments: [
           vscode.Uri.parse(bookmark.uri),
           {
-            selection: new vscode.Range(bookmark.line - 1, 0, bookmark.line - 1, 0),
+            selection: new vscode.Range(
+              bookmark.line - 1,
+              0,
+              bookmark.line - 1,
+              0
+            ),
           },
         ],
       };
       // Add command arguments for context menu actions
-      this.resourceUri = vscode.Uri.parse(`bookmark://${bookmark.uri}:${bookmark.line}`);
-      
+      this.resourceUri = vscode.Uri.parse(
+        `bookmark://${bookmark.uri}:${bookmark.line}`
+      );
+
       // Add hover actions for bookmark items with description
-      const showLineNumbers = vscode.workspace.getConfiguration('lightBookmarks').get<boolean>('showLineNumbers', true);
+      const showLineNumbers = vscode.workspace
+        .getConfiguration('lightBookmarks')
+        .get<boolean>('showLineNumbers', true);
       const lineInfo = showLineNumbers ? `:${bookmark.line}` : '';
-      const description = bookmark.description ? `\n\n**Description:** ${bookmark.description}` : '';
-      this.tooltip = new vscode.MarkdownString(`${bookmark.uri}${lineInfo}${description}\n\n**Click to open**`);
+      const description = bookmark.description
+        ? `\n\n**Description:** ${bookmark.description}`
+        : '';
+      this.tooltip = new vscode.MarkdownString(
+        `${bookmark.uri}${lineInfo}${description}\n\n**Click to open**`
+      );
       this.tooltip.isTrusted = true;
     } else if (collection) {
       this.tooltip = collection.name;
@@ -82,17 +106,47 @@ export class BookmarkTreeItem extends vscode.TreeItem {
       // All collections can now be deleted, including "Ungrouped"
       this.contextValue = 'collection';
       this.resourceUri = vscode.Uri.parse(`collection://${collection.id}`);
-      this.tooltip = new vscode.MarkdownString(`${collection.name}\n\n**Click to expand**`);
+      this.tooltip = new vscode.MarkdownString(
+        `${collection.name}\n\n**Click to expand**`
+      );
       this.tooltip.isTrusted = true;
     }
   }
 }
 
-export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem> {
-  private _onDidChangeTreeData: vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void> = new vscode.EventEmitter<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void>();
-  readonly onDidChangeTreeData: vscode.Event<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
-  
-  private treeView: vscode.TreeView<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem> | undefined;
+export class BookmarkTreeDataProvider
+  implements
+    vscode.TreeDataProvider<
+      BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem
+    >
+{
+  private _onDidChangeTreeData: vscode.EventEmitter<
+    | BookmarkTreeItem
+    | CodeLineTreeItem
+    | EmptyStateTreeItem
+    | undefined
+    | null
+    | void
+  > = new vscode.EventEmitter<
+    | BookmarkTreeItem
+    | CodeLineTreeItem
+    | EmptyStateTreeItem
+    | undefined
+    | null
+    | void
+  >();
+  readonly onDidChangeTreeData: vscode.Event<
+    | BookmarkTreeItem
+    | CodeLineTreeItem
+    | EmptyStateTreeItem
+    | undefined
+    | null
+    | void
+  > = this._onDidChangeTreeData.event;
+
+  private treeView:
+    | vscode.TreeView<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem>
+    | undefined;
 
   // Track expanded state for all tree levels
   private expandedCollections: Set<string> = new Set();
@@ -104,7 +158,11 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     private storageService?: StorageService
   ) {}
 
-  public setTreeView(treeView: vscode.TreeView<BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem>): void {
+  public setTreeView(
+    treeView: vscode.TreeView<
+      BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem
+    >
+  ): void {
     this.treeView = treeView;
   }
 
@@ -164,13 +222,17 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
    */
   public refreshCollection(collection: Collection): void {
     // Get the current bookmarks to determine if the collection should be collapsible
-    const collectionBookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id).filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
-    
+    const collectionBookmarks = this.bookmarkManager
+      .getBookmarksByCollection(collection.id)
+      .filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
+
     // Determine the collapsible state based on whether it was previously expanded
-    const collapsibleState = this.isCollectionExpanded(collection.id) 
-      ? vscode.TreeItemCollapsibleState.Expanded 
-      : (collectionBookmarks.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
-    
+    const collapsibleState = this.isCollectionExpanded(collection.id)
+      ? vscode.TreeItemCollapsibleState.Expanded
+      : collectionBookmarks.length > 0
+        ? vscode.TreeItemCollapsibleState.Collapsed
+        : vscode.TreeItemCollapsibleState.None;
+
     const collectionItem = new BookmarkTreeItem(
       collection.name,
       collapsibleState,
@@ -180,11 +242,15 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     this._onDidChangeTreeData.fire(collectionItem);
   }
 
-  public getTreeItem(element: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem): vscode.TreeItem {
+  public getTreeItem(
+    element: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem
+  ): vscode.TreeItem {
     return element;
   }
 
-  public getChildren(element?: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem): Thenable<(BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem)[]> {
+  public getChildren(
+    element?: BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem
+  ): Thenable<(BookmarkTreeItem | CodeLineTreeItem | EmptyStateTreeItem)[]> {
     if (!element) {
       // Root level - show collections and ungrouped bookmarks
       return this.getRootItems();
@@ -200,14 +266,20 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     }
   }
 
-  public async getRootItems(): Promise<(BookmarkTreeItem | EmptyStateTreeItem)[]> {
+  public async getRootItems(): Promise<
+    (BookmarkTreeItem | EmptyStateTreeItem)[]
+  > {
     const items: (BookmarkTreeItem | EmptyStateTreeItem)[] = [];
-    const currentWorkspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
-    const collections = this.collectionManager.getCollectionsForWorkspace(currentWorkspaceId);
+    const currentWorkspaceId =
+      vscode.workspace.workspaceFolders?.[0]?.uri.toString();
+    const collections =
+      this.collectionManager.getCollectionsForWorkspace(currentWorkspaceId);
     const allBookmarks = this.bookmarkManager.getAllBookmarks();
-    
+
     // Filter bookmarks to only include those from the current workspace
-    const workspaceBookmarks = allBookmarks.filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
+    const workspaceBookmarks = allBookmarks.filter(bookmark =>
+      this.isBookmarkInCurrentWorkspace(bookmark)
+    );
     const hasAnyBookmarks = workspaceBookmarks.length > 0;
     if (!hasAnyBookmarks) {
       return [new EmptyStateTreeItem()];
@@ -215,11 +287,15 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     // Add all collections for the current workspace (including ungrouped)
     for (const collection of collections) {
       // Always use getBookmarksByCollection for all collections
-      const collectionBookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id).filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
+      const collectionBookmarks = this.bookmarkManager
+        .getBookmarksByCollection(collection.id)
+        .filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
       // Set collapsible state based on whether it was previously expanded
-      const collapsibleState = this.isCollectionExpanded(collection.id) 
-        ? vscode.TreeItemCollapsibleState.Expanded 
-        : (collectionBookmarks.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
+      const collapsibleState = this.isCollectionExpanded(collection.id)
+        ? vscode.TreeItemCollapsibleState.Expanded
+        : collectionBookmarks.length > 0
+          ? vscode.TreeItemCollapsibleState.Collapsed
+          : vscode.TreeItemCollapsibleState.None;
       items.push(
         new BookmarkTreeItem(
           `${collection.name} (${collectionBookmarks.length})`,
@@ -232,10 +308,16 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     return items;
   }
 
-  private async getCollectionBookmarks(collection: Collection): Promise<BookmarkTreeItem[]> {
-    const bookmarks = this.bookmarkManager.getBookmarksByCollection(collection.id);
+  private async getCollectionBookmarks(
+    collection: Collection
+  ): Promise<BookmarkTreeItem[]> {
+    const bookmarks = this.bookmarkManager.getBookmarksByCollection(
+      collection.id
+    );
     // Filter bookmarks to only include those from the current workspace, preserving order
-    const workspaceBookmarks = bookmarks.filter(bookmark => this.isBookmarkInCurrentWorkspace(bookmark));
+    const workspaceBookmarks = bookmarks.filter(bookmark =>
+      this.isBookmarkInCurrentWorkspace(bookmark)
+    );
     return workspaceBookmarks.map(bookmark => {
       const fileName = this.getFileName(bookmark.uri);
       const bookmarkKey = `${bookmark.uri}:${bookmark.line}`;
@@ -244,27 +326,33 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         ? vscode.TreeItemCollapsibleState.Expanded
         : vscode.TreeItemCollapsibleState.Collapsed;
       // Show line numbers in label based on setting
-      const showLineNumbers = vscode.workspace.getConfiguration('lightBookmarks').get<boolean>('showLineNumbers', true);
+      const showLineNumbers = vscode.workspace
+        .getConfiguration('lightBookmarks')
+        .get<boolean>('showLineNumbers', true);
       const label = showLineNumbers ? `${fileName}:${bookmark.line}` : fileName;
-      return new BookmarkTreeItem(
-        label,
-        collapsibleState,
-        bookmark
-      );
+      return new BookmarkTreeItem(label, collapsibleState, bookmark);
     });
   }
 
-  private async getBookmarkCodeLine(bookmark: Bookmark): Promise<CodeLineTreeItem[]> {
+  private async getBookmarkCodeLine(
+    bookmark: Bookmark
+  ): Promise<CodeLineTreeItem[]> {
     try {
       const uri = vscode.Uri.parse(bookmark.uri);
       const document = await vscode.workspace.openTextDocument(uri);
       const line = document.lineAt(bookmark.line - 1); // Convert to 0-based index
       const codeLine = line.text.trim();
-      
+
       return [new CodeLineTreeItem(codeLine, bookmark.line, bookmark)];
     } catch (error) {
       // If we can't read the file or line, return an error message
-      return [new CodeLineTreeItem('Unable to read code line', bookmark.line, bookmark)];
+      return [
+        new CodeLineTreeItem(
+          'Unable to read code line',
+          bookmark.line,
+          bookmark
+        ),
+      ];
     }
   }
 
@@ -277,13 +365,15 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
 
     try {
       const bookmarkUri = vscode.Uri.parse(bookmark.uri);
-      
+
       // Check if the bookmark URI is within any of the current workspace folders
       return workspaceFolders.some(folder => {
         const folderUri = folder.uri;
-        return bookmarkUri.scheme === folderUri.scheme && 
-               bookmarkUri.authority === folderUri.authority &&
-               bookmarkUri.path.startsWith(folderUri.path);
+        return (
+          bookmarkUri.scheme === folderUri.scheme &&
+          bookmarkUri.authority === folderUri.authority &&
+          bookmarkUri.path.startsWith(folderUri.path)
+        );
       });
     } catch {
       // If URI parsing fails, don't show the bookmark
@@ -299,4 +389,4 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
       return 'Unknown';
     }
   }
-} 
+}

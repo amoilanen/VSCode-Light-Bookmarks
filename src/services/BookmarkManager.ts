@@ -11,17 +11,26 @@ export class BookmarkManager {
     this.collectionManager = collectionManager;
   }
 
-  public addBookmark(uri: string, line: number, collectionId?: string, description?: string): Bookmark | null {
+  public addBookmark(
+    uri: string,
+    line: number,
+    collectionId?: string,
+    description?: string
+  ): Bookmark | null {
     // Check if bookmark already exists
-    const existingBookmark = this.bookmarks.find(b => b.uri === uri && b.line === line);
+    const existingBookmark = this.bookmarks.find(
+      b => b.uri === uri && b.line === line
+    );
     if (existingBookmark) {
       return null;
     }
 
     // Check max bookmarks per file setting
-    const maxBookmarksPerFile = vscode.workspace.getConfiguration('lightBookmarks').get<number>('maxBookmarksPerFile', 100);
+    const maxBookmarksPerFile = vscode.workspace
+      .getConfiguration('lightBookmarks')
+      .get<number>('maxBookmarksPerFile', 100);
     const bookmarksInFile = this.bookmarks.filter(b => b.uri === uri).length;
-    
+
     if (bookmarksInFile >= maxBookmarksPerFile) {
       vscode.window.showWarningMessage(
         `Cannot add bookmark: Maximum of ${maxBookmarksPerFile} bookmarks per file reached. Please remove some bookmarks first.`
@@ -32,22 +41,27 @@ export class BookmarkManager {
     // Ensure the "Ungrouped" collection exists if we're adding to it
     const realCollectionId = collectionId || 'ungrouped-bookmarks';
     if (realCollectionId === 'ungrouped-bookmarks') {
-      const workspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
+      const workspaceId =
+        vscode.workspace.workspaceFolders?.[0]?.uri.toString();
       this.collectionManager.ensureUngroupedCollection(workspaceId);
     }
 
     const bookmark = new Bookmark(uri, line, realCollectionId, description);
-    
+
     // Assign order value based on existing bookmarks in the collection
     const collectionBookmarks = this.getBookmarksByCollection(realCollectionId);
     bookmark.order = collectionBookmarks.length * 10;
-    
+
     this.bookmarks.push(bookmark);
     this.notifyBookmarksChanged();
     return bookmark;
   }
 
-  public updateBookmarkDescription(uri: string, line: number, description: string): boolean {
+  public updateBookmarkDescription(
+    uri: string,
+    line: number,
+    description: string
+  ): boolean {
     const bookmark = this.bookmarks.find(b => b.uri === uri && b.line === line);
     if (!bookmark) {
       return false;
@@ -64,7 +78,9 @@ export class BookmarkManager {
   }
 
   public removeBookmark(uri: string, line: number): boolean {
-    const index = this.bookmarks.findIndex(b => b.uri === uri && b.line === line);
+    const index = this.bookmarks.findIndex(
+      b => b.uri === uri && b.line === line
+    );
     if (index === -1) {
       return false;
     }
@@ -74,9 +90,15 @@ export class BookmarkManager {
     return true;
   }
 
-  public toggleBookmark(uri: string, line: number, collectionId?: string): Bookmark | null {
-    const existingBookmark = this.bookmarks.find(b => b.uri === uri && b.line === line);
-    
+  public toggleBookmark(
+    uri: string,
+    line: number,
+    collectionId?: string
+  ): Bookmark | null {
+    const existingBookmark = this.bookmarks.find(
+      b => b.uri === uri && b.line === line
+    );
+
     if (existingBookmark) {
       this.removeBookmark(uri, line);
       return null;
@@ -90,7 +112,9 @@ export class BookmarkManager {
   }
 
   public getBookmarksByCollection(collectionId: string): Bookmark[] {
-    const bookmarks = this.bookmarks.filter(b => b.collectionId === collectionId);
+    const bookmarks = this.bookmarks.filter(
+      b => b.collectionId === collectionId
+    );
     // Sort by order, then by creation date for consistent ordering
     return bookmarks.sort((a, b) => {
       if (a.order !== b.order) {
@@ -133,9 +157,13 @@ export class BookmarkManager {
       return false;
     }
 
-    const collectionBookmarks = this.getBookmarksByCollection(bookmark.collectionId);
-    const currentIndex = collectionBookmarks.findIndex(b => b.uri === uri && b.line === line);
-    
+    const collectionBookmarks = this.getBookmarksByCollection(
+      bookmark.collectionId
+    );
+    const currentIndex = collectionBookmarks.findIndex(
+      b => b.uri === uri && b.line === line
+    );
+
     if (currentIndex <= 0) {
       return false; // Already at the top
     }
@@ -162,9 +190,13 @@ export class BookmarkManager {
       return false;
     }
 
-    const collectionBookmarks = this.getBookmarksByCollection(bookmark.collectionId);
-    const currentIndex = collectionBookmarks.findIndex(b => b.uri === uri && b.line === line);
-    
+    const collectionBookmarks = this.getBookmarksByCollection(
+      bookmark.collectionId
+    );
+    const currentIndex = collectionBookmarks.findIndex(
+      b => b.uri === uri && b.line === line
+    );
+
     if (currentIndex === -1 || currentIndex >= collectionBookmarks.length - 1) {
       return false; // Already at the bottom
     }
@@ -184,4 +216,4 @@ export class BookmarkManager {
     this.notifyBookmarksChanged();
     return true;
   }
-} 
+}

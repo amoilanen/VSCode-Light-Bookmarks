@@ -14,19 +14,22 @@ export class ToggleBookmarkCommand {
     private decorationProvider: BookmarkDecorationProvider
   ) {}
 
-  private generateDescriptionFromCodeLine(document: vscode.TextDocument, lineNumber: number): string {
+  private generateDescriptionFromCodeLine(
+    document: vscode.TextDocument,
+    lineNumber: number
+  ): string {
     try {
       const line = document.lineAt(lineNumber);
       const codeLine = line.text.trim();
-      
+
       // Take first 80 characters and trim trailing whitespace
       let description = codeLine.substring(0, 80).trim();
-      
+
       // If the line was truncated, add ellipsis
       if (codeLine.length > 80) {
         description += '...';
       }
-      
+
       return description;
     } catch (error) {
       return '';
@@ -44,18 +47,22 @@ export class ToggleBookmarkCommand {
     const line = editor.selection.active.line + 1; // Convert to 1-based line number
 
     const existingBookmark = this.bookmarkManager.getBookmark(uri, line);
-    
+
     if (existingBookmark) {
       // Remove existing bookmark
       const success = this.bookmarkManager.removeBookmark(uri, line);
       if (success) {
         // Save to storage
-        await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
-        
+        await this.storageService.saveBookmarks(
+          this.bookmarkManager.getAllBookmarks()
+        );
+
         // Refresh only the relevant parts of the tree
         if (existingBookmark.collectionId) {
           // Bookmark was removed from a collection, refresh that collection
-          const collection = this.collectionManager.getCollection(existingBookmark.collectionId);
+          const collection = this.collectionManager.getCollection(
+            existingBookmark.collectionId
+          );
           if (collection) {
             this.treeDataProvider.refreshCollection(collection);
           }
@@ -65,17 +72,29 @@ export class ToggleBookmarkCommand {
       }
     } else {
       // Add new bookmark with generated description
-      const description = this.generateDescriptionFromCodeLine(editor.document, line - 1);
-      const bookmark = this.bookmarkManager.addBookmark(uri, line, undefined, description);
-      
+      const description = this.generateDescriptionFromCodeLine(
+        editor.document,
+        line - 1
+      );
+      const bookmark = this.bookmarkManager.addBookmark(
+        uri,
+        line,
+        undefined,
+        description
+      );
+
       if (bookmark) {
         // Save to storage
-        await this.storageService.saveBookmarks(this.bookmarkManager.getAllBookmarks());
-        
+        await this.storageService.saveBookmarks(
+          this.bookmarkManager.getAllBookmarks()
+        );
+
         // Refresh only the relevant parts of the tree
         if (bookmark.collectionId) {
           // Bookmark was added to a collection, refresh that collection
-          const collection = this.collectionManager.getCollection(bookmark.collectionId);
+          const collection = this.collectionManager.getCollection(
+            bookmark.collectionId
+          );
           if (collection) {
             this.treeDataProvider.refreshCollection(collection);
           }
@@ -88,4 +107,4 @@ export class ToggleBookmarkCommand {
 
     this.decorationProvider.updateDecorations(editor);
   }
-} 
+}
