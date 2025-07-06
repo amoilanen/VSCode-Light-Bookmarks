@@ -1,6 +1,6 @@
-- Support jumping to bookmarks in the file editor
-  - Ctrl+Alt+N for next bookmark or menu item
-  - Ctrl+Alt+P for previous bookmark or menu item
+- Support jumping to bookmarks (the corresponding line should be shown navigated to in the file editor)
+  - Ctrl+Alt+N for next bookmark or menu item in the file editor context menu
+  - Ctrl+Alt+P for previous bookmark or menu item in the file editor context menu
 
 - Do not show the notification "Bookmark added at line", it is already obvious from the visual appearance
 

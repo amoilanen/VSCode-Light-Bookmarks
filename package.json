@@ -103,6 +103,16 @@
         "title": "Open bookmark settings",
         "category": "Light Bookmarks",
         "icon": "$(gear)"
+      },
+      {
+        "command": "lightBookmarks.goToNextBookmark",
+        "title": "Go to Next Bookmark",
+        "category": "Light Bookmarks"
+      },
+      {
+        "command": "lightBookmarks.goToPreviousBookmark",
+        "title": "Go to Previous Bookmark",
+        "category": "Light Bookmarks"
       }
     ],
     "keybindings": [
@@ -110,6 +120,14 @@
         "command": "lightBookmarks.toggleBookmark",
         "key": "ctrl+alt+k",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "lightBookmarks.goToNextBookmark",
+        "key": "ctrl+alt+n"
+      },
+      {
+        "command": "lightBookmarks.goToPreviousBookmark",
+        "key": "ctrl+alt+p"
       }
     ],
     "viewsContainers": {
@@ -133,6 +151,16 @@
       "editor/context": [
         {
           "command": "lightBookmarks.toggleBookmark",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "lightBookmarks.goToNextBookmark",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "lightBookmarks.goToPreviousBookmark",
           "group": "navigation",
           "when": "editorTextFocus"
         }
@@ -242,6 +270,12 @@
         },
         {
           "command": "lightBookmarks.openSettings"
+        },
+        {
+          "command": "lightBookmarks.goToNextBookmark"
+        },
+        {
+          "command": "lightBookmarks.goToPreviousBookmark"
         }
       ]
     }
@@ -263,7 +297,7 @@
     "@types/uuid": "^9.0.0",
     "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.42.0",
+    "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^8.26.0",
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
