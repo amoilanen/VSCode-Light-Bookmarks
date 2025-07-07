@@ -42,7 +42,11 @@ let service: LocalizationService;
 export function getService(): LocalizationService {
   if (!service) {
     service = new LocalizationService();
-    service.initialize();
+    try {
+      service.initialize();
+    } catch (error) {
+      console.error('Failed to initialize localization service:', error);
+    }
   }
   return service;
 }

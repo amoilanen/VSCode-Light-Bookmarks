@@ -3,3 +3,6 @@
 - Publish the extension to the marketplace for VS Code and OSS Code, VSCodium
   - Update README
   - Generate CHANGELOG
+  - Publish to VS Code Marketplace
+  - Publish to OSS Code Marketplace
+  - Publish to VSCodium Marketplace

@@ -318,8 +318,10 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && npm run copy-localization",
+    "copy-localization": "cp -r src/localization out/",
     "watch": "tsc -watch -p ./",
+    "watch:full": "npm run copy-localization && tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "lint:fix": "eslint src --ext ts --fix",
