@@ -20,4 +20,8 @@ package-lock.json
 *.vsix
 
 # Markdown files (optional - remove if you want to format markdown)
-*.md 
+*.md
+
+# Translation files
+package.nls.*.json
+src/localization/bundle.*.json 

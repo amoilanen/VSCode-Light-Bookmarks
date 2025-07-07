@@ -27,6 +27,23 @@
         "${workspaceFolder}/out/test/**/*.js"
       ],
       "preLaunchTask": "compile"
+    },
+    {
+      "name": "Run Current Test File",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": [
+        "--runInBand",
+        "--no-cache",
+        "${file}"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "cwd": "${workspaceFolder}"
     }
   ]
 } 

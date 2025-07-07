@@ -32,5 +32,12 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['out/', 'node_modules/', '**/*.js', '**/*.d.ts'],
+  ignorePatterns: [
+    'out/',
+    'node_modules/',
+    '**/*.js',
+    '**/*.d.ts',
+    'package.nls.*.json',
+    'src/localization/bundle.*.json'
+  ],
 }; 
