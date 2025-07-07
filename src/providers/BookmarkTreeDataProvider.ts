@@ -4,17 +4,18 @@ import { CollectionManager } from '../services/CollectionManager';
 import { StorageService } from '../services/StorageService';
 import { Bookmark } from '../models/Bookmark';
 import { Collection } from '../models/Collection';
+import { localize } from '../services/LocalizationService';
 
 export class EmptyStateTreeItem extends vscode.TreeItem {
   constructor() {
-    super('No bookmarks', vscode.TreeItemCollapsibleState.None);
+    super(localize('label.noBookmarks'), vscode.TreeItemCollapsibleState.None);
     this.tooltip = new vscode.MarkdownString(
-      'No bookmarks added yet\n\nAdd first bookmark with Ctrl+Alt+K in file editor'
+      localize('label.addFirstBookmarkTooltip')
     );
     this.tooltip.isTrusted = true;
     this.iconPath = new vscode.ThemeIcon('info');
     this.contextValue = 'empty-state';
-    this.description = 'Add first bookmark in file editor';
+    this.description = localize('label.addFirstBookmark');
   }
 }
 
@@ -31,7 +32,9 @@ export class CodeLineTreeItem extends vscode.TreeItem {
     const showLineNumbers = vscode.workspace
       .getConfiguration('lightBookmarks')
       .get<boolean>('showLineNumbers', true);
-    this.description = showLineNumbers ? `Line ${lineNumber}` : undefined;
+    this.description = showLineNumbers
+      ? localize('label.line') + ` ${lineNumber}`
+      : undefined;
 
     this.contextValue = 'code-line';
     this.command = {
@@ -97,7 +100,7 @@ export class BookmarkTreeItem extends vscode.TreeItem {
         ? `\n\n**Description:** ${bookmark.description}`
         : '';
       this.tooltip = new vscode.MarkdownString(
-        `${bookmark.uri}${lineInfo}${description}\n\n**Click to open**`
+        `${bookmark.uri}${lineInfo}${description}\n\n**${localize('tooltip.clickToOpen')}**`
       );
       this.tooltip.isTrusted = true;
     } else if (collection) {
@@ -107,7 +110,7 @@ export class BookmarkTreeItem extends vscode.TreeItem {
       this.contextValue = 'collection';
       this.resourceUri = vscode.Uri.parse(`collection://${collection.id}`);
       this.tooltip = new vscode.MarkdownString(
-        `${collection.name}\n\n**Click to expand**`
+        `${collection.name}\n\n**${localize('tooltip.clickToExpand')}**`
       );
       this.tooltip.isTrusted = true;
     }
@@ -348,7 +351,7 @@ export class BookmarkTreeDataProvider
       // If we can't read the file or line, return an error message
       return [
         new CodeLineTreeItem(
-          'Unable to read code line',
+          localize('label.unableToReadCodeLine'),
           bookmark.line,
           bookmark
         ),
@@ -384,9 +387,9 @@ export class BookmarkTreeDataProvider
   private getFileName(uri: string): string {
     try {
       const path = vscode.Uri.parse(uri).path;
-      return path.split('/').pop() || 'Unknown';
+      return path.split('/').pop() || localize('label.unknown');
     } catch {
-      return 'Unknown';
+      return localize('label.unknown');
     }
   }
 }

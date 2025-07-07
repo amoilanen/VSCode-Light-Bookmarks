@@ -1,11 +1,17 @@
 {
   "name": "vscode-light-bookmarks",
-  "displayName": "Light Bookmarks",
-  "description": "A lightweight bookmark manager for VSCode with collections support",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
   "version": "0.1.0",
   "publisher": "light-bookmarks",
   "engines": {
     "vscode": "^1.74.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true,
+      "description": "Bookmarks are stored in global state and work in untrusted workspaces"
+    }
   },
   "categories": [
     "Other"
@@ -16,114 +22,114 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Light Bookmarks",
+      "title": "%configuration.title%",
       "properties": {
         "lightBookmarks.showLineNumbers": {
           "type": "boolean",
           "default": true,
-          "description": "Show line numbers in the bookmarks view"
+          "description": "%configuration.showLineNumbers.description%"
         },
         "lightBookmarks.maxBookmarksPerFile": {
           "type": "number",
           "default": 100,
           "minimum": 1,
           "maximum": 1000,
-          "description": "Maximum number of bookmarks allowed per file"
+          "description": "%configuration.maxBookmarksPerFile.description%"
         }
       }
     },
     "commands": [
       {
         "command": "lightBookmarks.toggleBookmark",
-        "title": "Toggle Bookmark",
-        "category": "Light Bookmarks"
+        "title": "%command.toggleBookmark.title%",
+        "category": "%command.category%"
       },
       {
         "command": "lightBookmarks.createCollection",
-        "title": "Create collection",
-        "category": "Light Bookmarks",
+        "title": "%command.createCollection.title%",
+        "category": "%command.category%",
         "icon": "$(add)"
       },
       {
         "command": "lightBookmarks.deleteCollection",
-        "title": "Delete collection",
-        "category": "Light Bookmarks",
+        "title": "%command.deleteCollection.title%",
+        "category": "%command.category%",
         "icon": "$(trash)"
       },
       {
         "command": "lightBookmarks.moveCollectionUp",
-        "title": "Move collection up",
-        "category": "Light Bookmarks",
+        "title": "%command.moveCollectionUp.title%",
+        "category": "%command.category%",
         "icon": "$(arrow-up)"
       },
       {
         "command": "lightBookmarks.moveCollectionDown",
-        "title": "Move collection down",
-        "category": "Light Bookmarks",
+        "title": "%command.moveCollectionDown.title%",
+        "category": "%command.category%",
         "icon": "$(arrow-down)"
       },
       {
         "command": "lightBookmarks.editBookmarkDescription",
-        "title": "Edit description",
-        "category": "Light Bookmarks",
+        "title": "%command.editBookmarkDescription.title%",
+        "category": "%command.category%",
         "icon": "$(edit)"
       },
       {
         "command": "lightBookmarks.addBookmarkToCollection",
-        "title": "Add to collection",
-        "category": "Light Bookmarks",
+        "title": "%command.addBookmarkToCollection.title%",
+        "category": "%command.category%",
         "icon": "$(add)"
       },
       {
         "command": "lightBookmarks.deleteBookmark",
-        "title": "Delete bookmark",
-        "category": "Light Bookmarks",
+        "title": "%command.deleteBookmark.title%",
+        "category": "%command.category%",
         "icon": "$(trash)"
       },
       {
         "command": "lightBookmarks.moveBookmarkUp",
-        "title": "Move bookmark up",
-        "category": "Light Bookmarks",
+        "title": "%command.moveBookmarkUp.title%",
+        "category": "%command.category%",
         "icon": "$(arrow-up)"
       },
       {
         "command": "lightBookmarks.moveBookmarkDown",
-        "title": "Move bookmark down",
-        "category": "Light Bookmarks",
+        "title": "%command.moveBookmarkDown.title%",
+        "category": "%command.category%",
         "icon": "$(arrow-down)"
       },
       {
         "command": "lightBookmarks.collapseAll",
-        "title": "Collapse all",
-        "category": "Light Bookmarks",
+        "title": "%command.collapseAll.title%",
+        "category": "%command.category%",
         "icon": "$(collapse-all)"
       },
       {
         "command": "lightBookmarks.openSettings",
-        "title": "Open bookmark settings",
-        "category": "Light Bookmarks",
+        "title": "%command.openSettings.title%",
+        "category": "%command.category%",
         "icon": "$(gear)"
       },
       {
         "command": "lightBookmarks.goToNextBookmark",
-        "title": "Go to Next Bookmark",
-        "category": "Light Bookmarks"
+        "title": "%command.goToNextBookmark.title%",
+        "category": "%command.category%"
       },
       {
         "command": "lightBookmarks.goToPreviousBookmark",
-        "title": "Go to Previous Bookmark",
-        "category": "Light Bookmarks"
+        "title": "%command.goToPreviousBookmark.title%",
+        "category": "%command.category%"
       },
       {
         "command": "lightBookmarks.exportBookmarks",
-        "title": "Export bookmarks",
-        "category": "Light Bookmarks",
+        "title": "%command.exportBookmarks.title%",
+        "category": "%command.category%",
         "icon": "$(save)"
       },
       {
         "command": "lightBookmarks.importBookmarks",
-        "title": "Import bookmarks",
-        "category": "Light Bookmarks",
+        "title": "%command.importBookmarks.title%",
+        "category": "%command.category%",
         "icon": "$(import)"
       }
     ],
@@ -146,7 +152,7 @@
       "activitybar": [
         {
           "id": "light-bookmarks-vscode-light-bookmarks-bookmarksContainer",
-          "title": "Bookmarks",
+          "title": "%viewsContainers.bookmarks.title%",
           "icon": "resources/bookmark-icon.svg"
         }
       ]
@@ -155,7 +161,7 @@
       "light-bookmarks-vscode-light-bookmarks-bookmarksContainer": [
         {
           "id": "lightBookmarks.bookmarksView",
-          "name": "Bookmarks"
+          "name": "%views.bookmarks.name%"
         }
       ]
     },

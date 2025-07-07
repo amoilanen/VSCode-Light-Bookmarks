@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { CollectionManager } from '../services/CollectionManager';
 import { StorageService } from '../services/StorageService';
 import { BookmarkTreeDataProvider } from '../providers/BookmarkTreeDataProvider';
+import { localize } from '../services/LocalizationService';
 
 export class CreateCollectionCommand {
   constructor(
@@ -31,15 +32,17 @@ export class CreateCollectionCommand {
       // Refresh only the root level to show the new collection
       this.treeDataProvider.refreshRoot();
     } else {
-      vscode.window.showErrorMessage('Failed to create collection');
+      vscode.window.showErrorMessage(
+        localize('message.failedToCreateCollection')
+      );
     }
   }
 
   private async getCollectionNameFromUser(): Promise<string | undefined> {
     // Use QuickPick with custom input for better view integration
     const quickPick = vscode.window.createQuickPick();
-    quickPick.title = 'Create Collection';
-    quickPick.placeholder = 'Enter collection name';
+    quickPick.title = localize('prompt.createCollection');
+    quickPick.placeholder = localize('prompt.enterCollectionName');
     quickPick.canSelectMany = false;
     quickPick.ignoreFocusOut = true;
 
@@ -47,12 +50,14 @@ export class CreateCollectionCommand {
       quickPick.onDidAccept(() => {
         const value = quickPick.value.trim();
         if (!value || value.length === 0) {
-          vscode.window.showErrorMessage('Collection name cannot be empty');
+          vscode.window.showErrorMessage(
+            localize('validation.collectionNameEmpty')
+          );
           return;
         }
         if (this.collectionManager.hasCollectionByName(value)) {
           vscode.window.showErrorMessage(
-            'A collection with this name already exists'
+            localize('message.collectionAlreadyExists')
           );
           return;
         }

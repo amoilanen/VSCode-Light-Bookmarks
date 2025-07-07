@@ -4,6 +4,7 @@ import { CollectionManager } from '../services/CollectionManager';
 import { StorageService } from '../services/StorageService';
 import { BookmarkTreeDataProvider } from '../providers/BookmarkTreeDataProvider';
 import { BookmarkDecorationProvider } from '../providers/BookmarkDecorationProvider';
+import { localize } from '../services/LocalizationService';
 
 export class ToggleBookmarkCommand {
   constructor(
@@ -39,7 +40,7 @@ export class ToggleBookmarkCommand {
   public async execute(): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-      vscode.window.showInformationMessage('No active editor found');
+      vscode.window.showInformationMessage(localize('message.noActiveEditor'));
       return;
     }
 

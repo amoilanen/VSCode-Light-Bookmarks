@@ -164,6 +164,42 @@ The extension supports the following configuration options:
 - `lightBookmarks.showLineNumbers`: Show line numbers in bookmark list (default: true)
 - `lightBookmarks.autoSave`: Automatically save bookmarks (default: true)
 
+## Localization
+
+The extension supports multiple languages and automatically detects your VSCode language setting. Currently supported languages:
+
+- **English** (default)
+- **German** (de)
+- **Dutch** (nl) 
+- **French** (fr)
+
+### Adding New Languages
+
+To add support for a new language:
+
+1. Create a new file `package.nls.{locale}.json` in the root directory for package.json localization
+2. Create a new file `src/localization/bundle.{locale}.json` for runtime string localization
+3. Update the `LocalizationService.ts` to include the new locale
+
+Example for Spanish (es):
+```json
+// package.nls.es.json
+{
+  "extension.displayName": "Marcadores Ligeros",
+  "extension.description": "Un gestor de marcadores ligero para VSCode con soporte de colecciones",
+  // ... other strings
+}
+```
+
+```json
+// src/localization/bundle.es.json
+{
+  "message.noActiveEditor": "No se encontró ningún editor activo",
+  "message.noBookmarksFound": "No se encontraron marcadores",
+  // ... other runtime strings
+}
+```
+
 ## Contributing
 
 1. Fork the repository

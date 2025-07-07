@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { BookmarkManager } from '../services/BookmarkManager';
 import { Bookmark } from '../models/Bookmark';
+import { localize } from '../services/LocalizationService';
 
 export class GoToNextBookmarkCommand {
   private bookmarkManager: BookmarkManager;
@@ -14,7 +15,9 @@ export class GoToNextBookmarkCommand {
     const allBookmarks = this.bookmarkManager.getAllBookmarks();
 
     if (allBookmarks.length === 0) {
-      vscode.window.showInformationMessage('No bookmarks found');
+      vscode.window.showInformationMessage(
+        localize('message.noBookmarksFound')
+      );
       return;
     }
 
@@ -55,7 +58,9 @@ export class GoToNextBookmarkCommand {
         (nextBookmark.uri < currentUri ||
           (nextBookmark.uri === currentUri && nextBookmark.line <= currentLine))
       ) {
-        vscode.window.showInformationMessage('Wrapped to first bookmark');
+        vscode.window.showInformationMessage(
+          localize('message.wrappedToFirstBookmark')
+        );
       }
     }
 
@@ -85,7 +90,12 @@ export class GoToNextBookmarkCommand {
       // Reveal the line in the editor
       editor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
     } catch (error) {
-      vscode.window.showErrorMessage(`Failed to open bookmark: ${error}`);
+      vscode.window.showErrorMessage(
+        localize(
+          'message.failedToOpenBookmark',
+          error instanceof Error ? error.message : String(error)
+        )
+      );
     }
   }
 }

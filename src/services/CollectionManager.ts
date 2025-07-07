@@ -1,4 +1,5 @@
 import { Collection } from '../models/Collection';
+import { localize } from './LocalizationService';
 
 export class CollectionManager {
   private collections: Collection[] = [];
@@ -61,11 +62,12 @@ export class CollectionManager {
     // For ungrouped collections, also check by name and workspace to prevent duplicates
     if (
       collection.id === 'ungrouped-bookmarks' ||
-      collection.name === 'Ungrouped'
+      collection.name === localize('label.ungrouped')
     ) {
       const existingUngrouped = this.collections.find(
         c =>
-          (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') &&
+          (c.id === 'ungrouped-bookmarks' ||
+            c.name === localize('label.ungrouped')) &&
           c.workspaceId === collection.workspaceId
       );
       if (existingUngrouped) {
@@ -229,7 +231,11 @@ export class CollectionManager {
     }
 
     // Create the "Ungrouped" collection for this workspace if it doesn't exist
-    const ungrouped = new Collection('Ungrouped', workspaceId, 0);
+    const ungrouped = new Collection(
+      localize('label.ungrouped'),
+      workspaceId,
+      0
+    );
     Object.defineProperty(ungrouped, 'id', {
       value: 'ungrouped-bookmarks',
       writable: false,
@@ -256,7 +262,8 @@ export class CollectionManager {
     workspaces.forEach(workspaceId => {
       const ungroupedCollections = this.collections.filter(
         c =>
-          (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') &&
+          (c.id === 'ungrouped-bookmarks' ||
+            c.name === localize('label.ungrouped')) &&
           c.workspaceId === workspaceId
       );
 

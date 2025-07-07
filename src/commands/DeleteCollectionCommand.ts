@@ -4,6 +4,7 @@ import { BookmarkManager } from '../services/BookmarkManager';
 import { StorageService } from '../services/StorageService';
 import { BookmarkTreeDataProvider } from '../providers/BookmarkTreeDataProvider';
 import { BookmarkDecorationProvider } from '../providers/BookmarkDecorationProvider';
+import { localize } from '../services/LocalizationService';
 
 export class DeleteCollectionCommand {
   constructor(
@@ -17,7 +18,7 @@ export class DeleteCollectionCommand {
   public async execute(collectionId: string): Promise<void> {
     const collection = this.collectionManager.getCollection(collectionId);
     if (!collection) {
-      vscode.window.showErrorMessage('Collection not found');
+      vscode.window.showErrorMessage(localize('message.collectionNotFound'));
       return;
     }
 
@@ -35,9 +36,9 @@ export class DeleteCollectionCommand {
 
       // For "Ungrouped" collection with bookmarks, ask for confirmation with different message
       const result = await vscode.window.showWarningMessage(
-        'Deleting the "Ungrouped" collection will delete all ungrouped bookmarks. This action cannot be undone. Proceed?',
+        localize('confirm.deleteUngroupedCollection'),
         { modal: true },
-        'Delete'
+        localize('confirm.delete')
       );
 
       if (result === 'Delete') {
@@ -61,9 +62,9 @@ export class DeleteCollectionCommand {
 
     // If collection has bookmarks, ask for confirmation
     const result = await vscode.window.showWarningMessage(
-      'Deleting collection will also delete bookmarks contained in it, proceed?',
+      localize('confirm.deleteCollection'),
       { modal: true },
-      'Delete'
+      localize('confirm.delete')
     );
 
     if (result === 'Delete') {
@@ -100,7 +101,9 @@ export class DeleteCollectionCommand {
 
       this.decorationProvider.updateDecorations();
     } else {
-      vscode.window.showErrorMessage('Failed to delete collection');
+      vscode.window.showErrorMessage(
+        localize('message.failedToDeleteCollection')
+      );
     }
   }
 }

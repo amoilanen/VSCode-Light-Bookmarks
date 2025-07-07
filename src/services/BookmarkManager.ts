@@ -1,6 +1,7 @@
 import { Bookmark } from '../models/Bookmark';
 import { CollectionManager } from './CollectionManager';
 import * as vscode from 'vscode';
+import { localize } from './LocalizationService';
 
 export class BookmarkManager {
   private bookmarks: Bookmark[] = [];
@@ -33,7 +34,7 @@ export class BookmarkManager {
 
     if (bookmarksInFile >= maxBookmarksPerFile) {
       vscode.window.showWarningMessage(
-        `Cannot add bookmark: Maximum of ${maxBookmarksPerFile} bookmarks per file reached. Please remove some bookmarks first.`
+        localize('message.maxBookmarksReached', maxBookmarksPerFile.toString())
       );
       return null;
     }

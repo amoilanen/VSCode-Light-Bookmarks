@@ -24,6 +24,7 @@ import { GoToNextBookmarkCommand } from './commands/GoToNextBookmarkCommand';
 import { GoToPreviousBookmarkCommand } from './commands/GoToPreviousBookmarkCommand';
 import { ExportBookmarksCommand } from './commands/ExportBookmarksCommand';
 import { ImportBookmarksCommand } from './commands/ImportBookmarksCommand';
+import { localize } from './services/LocalizationService';
 
 export class ExtensionManager {
   private bookmarkManager: BookmarkManager;
@@ -115,12 +116,13 @@ export class ExtensionManager {
         .getAllCollections()
         .some(
           c =>
-            (c.id === 'ungrouped-bookmarks' || c.name === 'Ungrouped') &&
+            (c.id === 'ungrouped-bookmarks' ||
+              c.name === localize('label.ungrouped')) &&
             c.workspaceId === ws
         );
 
       if (!hasUngrouped) {
-        const ungrouped = new Collection('Ungrouped', ws, 0);
+        const ungrouped = new Collection(localize('label.ungrouped'), ws, 0);
         Object.defineProperty(ungrouped, 'id', {
           value: 'ungrouped-bookmarks',
           writable: false,
@@ -215,12 +217,12 @@ export class ExtensionManager {
       'lightBookmarks.createCollection',
       async () => {
         const collectionName = await vscode.window.showInputBox({
-          title: 'Create New Collection',
-          placeHolder: 'Enter collection name',
-          prompt: 'Please enter a name for the new collection',
+          title: localize('prompt.createCollection'),
+          placeHolder: localize('prompt.enterCollectionName'),
+          prompt: localize('prompt.enterCollectionNamePlaceholder'),
           validateInput: value => {
             if (!value || value.trim().length === 0) {
-              return 'Collection name cannot be empty';
+              return localize('validation.collectionNameEmpty');
             }
             const workspaceId =
               vscode.workspace.workspaceFolders?.[0]?.uri.toString();
@@ -228,7 +230,7 @@ export class ExtensionManager {
               .getCollectionsForWorkspace(workspaceId)
               .find(c => c.name === value.trim());
             if (existingCollection) {
-              return 'A collection with this name already exists in this workspace';
+              return localize('message.collectionAlreadyExists');
             }
             return null;
           },
@@ -252,7 +254,9 @@ export class ExtensionManager {
           );
           this.treeDataProvider.refreshRoot();
         } else {
-          vscode.window.showErrorMessage('Failed to create collection');
+          vscode.window.showErrorMessage(
+            localize('message.failedToCreateCollection')
+          );
         }
       }
     );
@@ -542,7 +546,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   extensionManager.initialize().catch(_error => {
     vscode.window.showErrorMessage(
-      'Failed to initialize Light Bookmarks extension'
+      localize('message.failedToInitializeExtension')
     );
   });
 }

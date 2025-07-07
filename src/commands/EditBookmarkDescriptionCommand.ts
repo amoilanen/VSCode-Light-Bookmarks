@@ -5,6 +5,7 @@ import { StorageService } from '../services/StorageService';
 import { BookmarkTreeDataProvider } from '../providers/BookmarkTreeDataProvider';
 import { BookmarkDecorationProvider } from '../providers/BookmarkDecorationProvider';
 import { BookmarkTreeItem } from '../providers/BookmarkTreeDataProvider';
+import { localize } from '../services/LocalizationService';
 
 export class EditBookmarkDescriptionCommand {
   constructor(
@@ -26,7 +27,7 @@ export class EditBookmarkDescriptionCommand {
       // If no tree item provided, try to get from active editor
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
-        vscode.window.showErrorMessage('No active editor found');
+        vscode.window.showErrorMessage(localize('message.noActiveEditor'));
         return;
       }
 
@@ -36,13 +37,15 @@ export class EditBookmarkDescriptionCommand {
 
       // Check if bookmark exists at this location
       if (!this.bookmarkManager.hasBookmark(bookmarkUri, bookmarkLine)) {
-        vscode.window.showErrorMessage('No bookmark found at the current line');
+        vscode.window.showErrorMessage(
+          localize('message.noBookmarkAtCurrentLine')
+        );
         return;
       }
     }
 
     if (!bookmarkUri || bookmarkLine === undefined) {
-      vscode.window.showErrorMessage('No bookmark selected');
+      vscode.window.showErrorMessage(localize('message.noBookmarkAtLocation'));
       return;
     }
 
@@ -53,13 +56,13 @@ export class EditBookmarkDescriptionCommand {
 
     // Show input box for editing description
     const newDescription = await vscode.window.showInputBox({
-      title: 'Edit Bookmark Description',
-      placeHolder: 'Enter bookmark description',
-      prompt: 'Please enter a description for this bookmark',
+      title: localize('prompt.editBookmarkDescription'),
+      placeHolder: localize('prompt.enterBookmarkDescription'),
+      prompt: localize('prompt.enterBookmarkDescriptionPlaceholder'),
       value: currentDescription,
       validateInput: value => {
         if (value && value.length > 500) {
-          return 'Description cannot exceed 500 characters';
+          return localize('validation.descriptionTooLong');
         }
         return null;
       },
@@ -85,7 +88,9 @@ export class EditBookmarkDescriptionCommand {
       // Refresh the tree view to show updated description
       this.treeDataProvider.refresh();
     } else {
-      vscode.window.showErrorMessage('Failed to update bookmark description');
+      vscode.window.showErrorMessage(
+        localize('message.failedToUpdateBookmark')
+      );
     }
   }
 }
