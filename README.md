@@ -166,12 +166,7 @@ The extension supports the following configuration options:
 
 ## Localization
 
-The extension supports multiple languages and automatically detects your VSCode language setting. Currently supported languages:
-
-- **English** (default)
-- **German** (de)
-- **Dutch** (nl) 
-- **French** (fr)
+The extension supports many languages officially supported by VS Code and automatically detects your VSCode language setting.
 
 ### Adding New Languages
 
