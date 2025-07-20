@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Przejdź do poprzedniej zakładki",
   "command.exportBookmarks.title": "Eksportuj zakładki",
   "command.importBookmarks.title": "Importuj zakładki",
-  "command.category": "Lekkie Zakładki",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Zakładki",
   "viewsContainers.bookmarks.title": "Zakładki",
   "views.bookmarks.name": "Zakładki"
 } 

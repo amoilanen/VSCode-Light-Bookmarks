@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Vie kirjanmerkit",
   "command.importBookmarks.title": "Tuo kirjanmerkit",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Kirjanmerkit",
   "viewsContainers.bookmarks.title": "Kirjanmerkit",
   "views.bookmarks.name": "Kirjanmerkit"
 } 

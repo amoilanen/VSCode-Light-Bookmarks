@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Xuất dấu trang",
   "command.importBookmarks.title": "Nhập dấu trang",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Dấu trang",
   "viewsContainers.bookmarks.title": "Dấu trang",
   "views.bookmarks.name": "Dấu trang"
 } 

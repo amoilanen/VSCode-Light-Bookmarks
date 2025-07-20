@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "עבור לסימניה הקודמת",
   "command.exportBookmarks.title": "ייצא סימניות",
   "command.importBookmarks.title": "ייבא סימניות",
-  "command.category": "סימניות קלות",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "סימניות",
   "viewsContainers.bookmarks.title": "סימניות",
   "views.bookmarks.name": "סימניות"
 } 

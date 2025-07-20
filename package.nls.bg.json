@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Отиване към предишната отметка",
   "command.exportBookmarks.title": "Експортиране на отметки",
   "command.importBookmarks.title": "Импортиране на отметки",
-  "command.category": "Леки отметки",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Отметки",
   "viewsContainers.bookmarks.title": "Отметки",
   "views.bookmarks.name": "Отметки"
 } 

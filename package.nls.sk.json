@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Exportovať záložky",
   "command.importBookmarks.title": "Importovať záložky",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Záložky",
   "viewsContainers.bookmarks.title": "Záložky",
   "views.bookmarks.name": "Záložky"
 } 

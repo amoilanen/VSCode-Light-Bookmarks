@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "匯出書籤",
   "command.importBookmarks.title": "匯入書籤",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "書籤",
   "viewsContainers.bookmarks.title": "書籤",
   "views.bookmarks.name": "書籤"
 } 

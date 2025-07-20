@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Exporter les signets",
   "command.importBookmarks.title": "Importer les signets",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Signets",
   "viewsContainers.bookmarks.title": "Signets",
   "views.bookmarks.name": "Signets"
 } 

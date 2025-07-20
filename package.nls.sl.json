@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Izvozi zaznamke",
   "command.importBookmarks.title": "Uvozi zaznamke",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Zaznamki",
   "viewsContainers.bookmarks.title": "Zaznamki",
   "views.bookmarks.name": "Zaznamki"
 } 

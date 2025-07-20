@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Μετάβαση στον προηγούμενο σελιδοδείκτη",
   "command.exportBookmarks.title": "Εξαγωγή σελιδοδεικτών",
   "command.importBookmarks.title": "Εισαγωγή σελιδοδεικτών",
-  "command.category": "Ελαφροί Σελιδοδείκτες",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Σελιδοδείκτες",
   "viewsContainers.bookmarks.title": "Σελιδοδείκτες",
   "views.bookmarks.name": "Σελιδοδείκτες"
 } 

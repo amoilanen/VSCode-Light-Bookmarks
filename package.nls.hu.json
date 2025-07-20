@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Ugrás az előző könyvjelzőre",
   "command.exportBookmarks.title": "Könyvjelzők exportálása",
   "command.importBookmarks.title": "Könyvjelzők importálása",
-  "command.category": "Könnyű Könyvjelzők",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Könyvjelzők",
   "viewsContainers.bookmarks.title": "Könyvjelzők",
   "views.bookmarks.name": "Könyvjelzők"
 } 

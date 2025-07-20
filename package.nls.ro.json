@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Mergeți la marcajul anterior",
   "command.exportBookmarks.title": "Exportați marcajele",
   "command.importBookmarks.title": "Importați marcajele",
-  "command.category": "Marcaje Ușoare",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Marcaje",
   "viewsContainers.bookmarks.title": "Marcaje",
   "views.bookmarks.name": "Marcaje"
 } 

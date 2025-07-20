@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "ブックマークをエクスポート",
   "command.importBookmarks.title": "ブックマークをインポート",
   "command.category": "ライトブックマーク",
+  "submenu.bookmarks.label": "ブックマーク",
   "viewsContainers.bookmarks.title": "ブックマーク",
   "views.bookmarks.name": "ブックマーク"
 } 

@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Vai al segnalibro precedente",
   "command.exportBookmarks.title": "Esporta segnalibri",
   "command.importBookmarks.title": "Importa segnalibri",
-  "command.category": "Segnalibri Leggeri",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Segnalibri",
   "viewsContainers.bookmarks.title": "Segnalibri",
   "views.bookmarks.name": "Segnalibri"
 } 

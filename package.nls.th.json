@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "ส่งออกที่คั่นหน้า",
   "command.importBookmarks.title": "นำเข้าที่คั่นหน้า",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "ที่คั่นหน้า",
   "viewsContainers.bookmarks.title": "ที่คั่นหน้า",
   "views.bookmarks.name": "ที่คั่นหน้า"
 } 

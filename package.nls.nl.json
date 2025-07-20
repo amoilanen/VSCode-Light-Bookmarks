@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Bladwijzers exporteren",
   "command.importBookmarks.title": "Bladwijzers importeren",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Bladwijzers",
   "viewsContainers.bookmarks.title": "Bladwijzers",
   "views.bookmarks.name": "Bladwijzers"
 } 

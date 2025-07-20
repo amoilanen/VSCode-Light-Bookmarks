@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Ir para o marcador anterior",
   "command.exportBookmarks.title": "Exportar marcadores",
   "command.importBookmarks.title": "Importar marcadores",
-  "command.category": "Marcadores Leves",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Marcadores",
   "viewsContainers.bookmarks.title": "Marcadores",
   "views.bookmarks.name": "Marcadores"
 } 

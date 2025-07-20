@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Exportar marcadores",
   "command.importBookmarks.title": "Importar marcadores",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Marcadores",
   "viewsContainers.bookmarks.title": "Marcadores",
   "views.bookmarks.name": "Marcadores"
 } 

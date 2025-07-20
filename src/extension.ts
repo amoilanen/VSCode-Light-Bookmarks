@@ -423,7 +423,7 @@ export class ExtensionManager {
       'lightBookmarks.collapseAll',
       () => {
         vscode.commands.executeCommand(
-          'workbench.actions.treeView.collapseAll',
+          'workbench.actions.treeView.lightBookmarks.bookmarksView.collapseAll',
           'lightBookmarks.bookmarksView'
         );
       }

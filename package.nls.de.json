@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Lesezeichen exportieren",
   "command.importBookmarks.title": "Lesezeichen importieren",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Lesezeichen",
   "viewsContainers.bookmarks.title": "Lesezeichen",
   "views.bookmarks.name": "Lesezeichen"
 } 

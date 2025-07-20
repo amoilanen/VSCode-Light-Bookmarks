@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "북마크 내보내기",
   "command.importBookmarks.title": "북마크 가져오기",
   "command.category": "라이트 북마크",
+  "submenu.bookmarks.label": "북마크",
   "viewsContainers.bookmarks.title": "북마크",
   "views.bookmarks.name": "북마크"
 } 

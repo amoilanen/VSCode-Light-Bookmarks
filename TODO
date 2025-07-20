@@ -1,6 +1,7 @@
 - Add more tests for the extension, cover uncovered modules
 
 - Publish the extension to the marketplace for VS Code and OSS Code, VSCodium
+  - Rename the extension
   - Update README
   - Generate CHANGELOG
   - Publish to VS Code Marketplace

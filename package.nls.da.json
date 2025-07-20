@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Gå til forrige bogmærke",
   "command.exportBookmarks.title": "Eksporter bogmærker",
   "command.importBookmarks.title": "Importer bogmærker",
-  "command.category": "Lette Bogmærker",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Bogmærker",
   "viewsContainers.bookmarks.title": "Bogmærker",
   "views.bookmarks.name": "Bogmærker"
 } 

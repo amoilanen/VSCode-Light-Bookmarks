@@ -14,6 +14,7 @@
     }
   },
   "categories": [
+    "Bookmarks",
     "Other"
   ],
   "activationEvents": [
@@ -146,6 +147,21 @@
       {
         "command": "lightBookmarks.goToPreviousBookmark",
         "key": "ctrl+alt+p"
+      },
+      {
+        "command": "lightBookmarks.toggleBookmark",
+        "key": "cmd+alt+k",
+        "when": "editorTextFocus && isMac"
+      },
+      {
+        "command": "lightBookmarks.goToNextBookmark",
+        "key": "cmd+alt+n",
+        "when": "isMac"
+      },
+      {
+        "command": "lightBookmarks.goToPreviousBookmark",
+        "key": "cmd+alt+p",
+        "when": "isMac"
       }
     ],
     "viewsContainers": {
@@ -168,17 +184,7 @@
     "menus": {
       "editor/context": [
         {
-          "command": "lightBookmarks.toggleBookmark",
-          "group": "navigation",
-          "when": "editorTextFocus"
-        },
-        {
-          "command": "lightBookmarks.goToNextBookmark",
-          "group": "navigation",
-          "when": "editorTextFocus"
-        },
-        {
-          "command": "lightBookmarks.goToPreviousBookmark",
+          "submenu": "lightBookmarks.bookmarksSubmenu",
           "group": "navigation",
           "when": "editorTextFocus"
         }
@@ -313,8 +319,25 @@
         {
           "command": "lightBookmarks.importBookmarks"
         }
+      ],
+      "lightBookmarks.bookmarksSubmenu": [
+        {
+          "command": "lightBookmarks.toggleBookmark"
+        },
+        {
+          "command": "lightBookmarks.goToNextBookmark"
+        },
+        {
+          "command": "lightBookmarks.goToPreviousBookmark"
+        }
       ]
-    }
+    },
+    "submenus": [
+      {
+        "id": "lightBookmarks.bookmarksSubmenu",
+        "label": "%submenu.bookmarks.label%"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

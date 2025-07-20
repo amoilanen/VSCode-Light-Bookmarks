@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "الانتقال إلى الإشارة المرجعية السابقة",
   "command.exportBookmarks.title": "تصدير الإشارات المرجعية",
   "command.importBookmarks.title": "استيراد الإشارات المرجعية",
-  "command.category": "الإشارات المرجعية الخفيفة",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "الإشارات المرجعية",
   "viewsContainers.bookmarks.title": "الإشارات المرجعية",
   "views.bookmarks.name": "الإشارات المرجعية"
 } 

@@ -20,7 +20,8 @@
   "command.goToPreviousBookmark.title": "Přejít na předchozí záložku",
   "command.exportBookmarks.title": "Exportovat záložky",
   "command.importBookmarks.title": "Importovat záložky",
-  "command.category": "Lehké záložky",
+  "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Záložky",
   "viewsContainers.bookmarks.title": "Záložky",
   "views.bookmarks.name": "Záložky"
 } 

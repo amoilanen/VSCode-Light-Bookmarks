@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Yer imlerini dışa aktar",
   "command.importBookmarks.title": "Yer imlerini içe aktar",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Yer İmleri",
   "viewsContainers.bookmarks.title": "Yer İmleri",
   "views.bookmarks.name": "Yer İmleri"
 } 

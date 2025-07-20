@@ -21,6 +21,7 @@
   "command.exportBookmarks.title": "Експортувати закладки",
   "command.importBookmarks.title": "Імпортувати закладки",
   "command.category": "Light Bookmarks",
+  "submenu.bookmarks.label": "Закладки",
   "viewsContainers.bookmarks.title": "Закладки",
   "views.bookmarks.name": "Закладки"
 } 
