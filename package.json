@@ -225,27 +225,12 @@
         {
           "command": "lightBookmarks.editBookmarkDescription",
           "group": "inline@1",
-          "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-ungrouped"
-        },
-        {
-          "command": "lightBookmarks.editBookmarkDescription",
-          "group": "inline@1",
           "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-in-collection"
         },
         {
           "command": "lightBookmarks.addBookmarkToCollection",
           "group": "inline@2",
-          "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-ungrouped"
-        },
-        {
-          "command": "lightBookmarks.addBookmarkToCollection",
-          "group": "inline@2",
           "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-in-collection"
-        },
-        {
-          "command": "lightBookmarks.deleteBookmark",
-          "group": "inline@3",
-          "when": "view == lightBookmarks.bookmarksView && viewItem == bookmark-ungrouped"
         },
         {
           "command": "lightBookmarks.deleteBookmark",
@@ -276,16 +261,6 @@
           "command": "lightBookmarks.moveCollectionDown",
           "group": "inline@3",
           "when": "view == lightBookmarks.bookmarksView && viewItem == collection"
-        },
-        {
-          "command": "lightBookmarks.moveCollectionUp",
-          "group": "inline@2",
-          "when": "view == lightBookmarks.bookmarksView && viewItem == ungrouped-collection"
-        },
-        {
-          "command": "lightBookmarks.moveCollectionDown",
-          "group": "inline@3",
-          "when": "view == lightBookmarks.bookmarksView && viewItem == ungrouped-collection"
         }
       ],
       "commandPalette": [

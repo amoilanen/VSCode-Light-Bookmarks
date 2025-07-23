@@ -68,9 +68,7 @@ export class BookmarkTreeItem extends vscode.TreeItem {
       this.tooltip = `${bookmark.uri}:${bookmark.line}`;
       this.iconPath = new vscode.ThemeIcon('bookmark');
       // Set different context values based on whether bookmark is in a collection
-      this.contextValue = bookmark.collectionId
-        ? 'bookmark-in-collection'
-        : 'bookmark-ungrouped';
+      this.contextValue = 'bookmark-in-collection';
       this.command = {
         command: 'vscode.open',
         title: 'Open Bookmark',
