@@ -42,8 +42,7 @@
     "commands": [
       {
         "command": "lightBookmarks.toggleBookmark",
-        "title": "%command.toggleBookmark.title%",
-        "category": "%command.category%"
+        "title": "%command.toggleBookmark.title%"
       },
       {
         "command": "lightBookmarks.createCollection",
@@ -185,6 +184,14 @@
       "editor/context": [
         {
           "submenu": "lightBookmarks.bookmarksSubmenu",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        }
+      ],
+      "editor/lineNumber/context": [
+        {
+          "command": "lightBookmarks.toggleBookmark",
+          "title": "%command.toggleBookmark.title%",
           "group": "navigation",
           "when": "editorTextFocus"
         }

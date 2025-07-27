@@ -183,7 +183,7 @@ export class ExtensionManager {
     // Toggle bookmark command
     const toggleCommand = vscode.commands.registerCommand(
       'lightBookmarks.toggleBookmark',
-      () => {
+      (params?: { lineNumber: number; uri: vscode.Uri }) => {
         const command = new ToggleBookmarkCommand(
           this.bookmarkManager,
           this.collectionManager,
@@ -191,7 +191,7 @@ export class ExtensionManager {
           this.treeDataProvider,
           this.decorationProvider
         );
-        command.execute();
+        command.execute(params);
       }
     );
     this.disposables.push(toggleCommand);

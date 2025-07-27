@@ -37,15 +37,37 @@ export class ToggleBookmarkCommand {
     }
   }
 
-  public async execute(): Promise<void> {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      vscode.window.showInformationMessage(localize('message.noActiveEditor'));
-      return;
-    }
+  public async execute(params?: {
+    lineNumber: number;
+    uri: vscode.Uri;
+  }): Promise<void> {
+    let editor: vscode.TextEditor | undefined;
+    let uri: string;
+    let line: number;
 
-    const uri = editor.document.uri.toString();
-    const line = editor.selection.active.line + 1; // Convert to 1-based line number
+    if (params) {
+      uri = params.uri.toString();
+      line = params.lineNumber;
+      editor = vscode.window.visibleTextEditors.find(
+        e => e.document.uri.toString() === uri
+      );
+      if (!editor) {
+        vscode.window.showInformationMessage(
+          localize('message.noActiveEditor')
+        );
+        return;
+      }
+    } else {
+      editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showInformationMessage(
+          localize('message.noActiveEditor')
+        );
+        return;
+      }
+      uri = editor.document.uri.toString();
+      line = editor.selection.active.line + 1; // Convert to 1-based line number
+    }
 
     const existingBookmark = this.bookmarkManager.getBookmark(uri, line);
 
