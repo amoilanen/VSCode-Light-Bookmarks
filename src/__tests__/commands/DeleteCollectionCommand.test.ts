@@ -121,7 +121,7 @@ describe('DeleteCollectionCommand', () => {
 
       // Assert
       expect(vscode.window.showWarningMessage).toHaveBeenCalledWith(
-        'Deleting collection will also delete bookmarks contained in it, proceed?',
+        'Deleting the collection will also delete all bookmarks it contains. Continue?',
         { modal: true },
         'Delete'
       );
@@ -153,7 +153,7 @@ describe('DeleteCollectionCommand', () => {
 
       // Assert
       expect(vscode.window.showWarningMessage).toHaveBeenCalledWith(
-        'Deleting collection will also delete bookmarks contained in it, proceed?',
+        'Deleting the collection will also delete all bookmarks it contains. Continue?',
         { modal: true },
         'Delete'
       );

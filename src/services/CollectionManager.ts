@@ -55,14 +55,20 @@ export class CollectionManager {
     this.collections.push(collection);
   }
 
-  public hasCollectionByName(name: string): boolean {
-    return this.collections.some(c => c.name === name);
+  public hasCollectionByName(name: string, workspaceId?: string): boolean {
+    return this.collections.some(
+      c => c.name === name && c.workspaceId === workspaceId
+    );
   }
 
   public hasCollectionForWorkspace(id: string, workspaceId?: string): boolean {
     return this.collections.some(
       c => c.id === id && c.workspaceId === workspaceId
     );
+  }
+
+  public clearAllCollections(): void {
+    this.collections = [];
   }
 
   public moveCollectionUp(collectionId: string): boolean {
@@ -86,9 +92,9 @@ export class CollectionManager {
 
     // Swap order values
     const previousCollection = workspaceCollections[currentIndex - 1];
-    const tempOrder = collection.order;
+    const collectionOrderBefore = collection.order;
     collection.order = previousCollection.order;
-    previousCollection.order = tempOrder;
+    previousCollection.order = collectionOrderBefore;
 
     // Re-normalize order values
     workspaceCollections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -123,9 +129,9 @@ export class CollectionManager {
 
     // Swap order values
     const nextCollection = workspaceCollections[currentIndex + 1];
-    const tempOrder = collection.order;
+    const collectionOrderBefore = collection.order;
     collection.order = nextCollection.order;
-    nextCollection.order = tempOrder;
+    nextCollection.order = collectionOrderBefore;
 
     // Re-normalize order values
     workspaceCollections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));

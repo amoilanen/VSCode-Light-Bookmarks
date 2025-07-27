@@ -19,8 +19,10 @@ export class CreateCollectionCommand {
     }
 
     // Create the collection
+    const workspaceId = vscode.workspace.workspaceFolders?.[0]?.uri.toString();
     const collection = this.collectionManager.createCollection(
-      collectionName.trim()
+      collectionName.trim(),
+      workspaceId
     );
 
     if (collection) {
@@ -55,7 +57,9 @@ export class CreateCollectionCommand {
           );
           return;
         }
-        if (this.collectionManager.hasCollectionByName(value)) {
+        const workspaceId =
+          vscode.workspace.workspaceFolders?.[0]?.uri.toString();
+        if (this.collectionManager.hasCollectionByName(value, workspaceId)) {
           vscode.window.showErrorMessage(
             localize('message.collectionAlreadyExists')
           );

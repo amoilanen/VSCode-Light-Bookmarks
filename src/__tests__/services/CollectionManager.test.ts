@@ -216,6 +216,17 @@ describe('CollectionManager', () => {
     });
   });
 
+  describe('clearAllCollections', () => {
+    it('should remove all collections', () => {
+      collectionManager.createCollection('Collection 1');
+      collectionManager.createCollection('Collection 2');
+
+      collectionManager.clearAllCollections();
+
+      expect(collectionManager.getAllCollections()).toHaveLength(0);
+    });
+  });
+
   describe('hasCollectionForWorkspace', () => {
     it('should return true for existing collection in specific workspace', () => {
       const workspaceId = 'file:///workspace1';
@@ -263,18 +274,36 @@ describe('CollectionManager', () => {
   });
 
   describe('hasCollectionByName', () => {
-    it('should return true for existing collection name', () => {
-      collectionManager.createCollection('Test Collection');
+    it('should return true for existing collection name in same workspace', () => {
+      const workspaceId = 'file:///workspace1';
+      collectionManager.createCollection('Test Collection', workspaceId);
 
-      const hasCollection =
-        collectionManager.hasCollectionByName('Test Collection');
+      const hasCollection = collectionManager.hasCollectionByName(
+        'Test Collection',
+        workspaceId
+      );
 
       expect(hasCollection).toBe(true);
     });
 
-    it('should return false for non-existent collection name', () => {
+    it('should return false for collection name in different workspace', () => {
+      const workspace1 = 'file:///workspace1';
+      const workspace2 = 'file:///workspace2';
+      collectionManager.createCollection('Test Collection', workspace1);
+
       const hasCollection = collectionManager.hasCollectionByName(
-        'Non-existent Collection'
+        'Test Collection',
+        workspace2
+      );
+
+      expect(hasCollection).toBe(false);
+    });
+
+    it('should return false for non-existent collection name', () => {
+      const workspaceId = 'file:///workspace1';
+      const hasCollection = collectionManager.hasCollectionByName(
+        'Non-existent Collection',
+        workspaceId
       );
 
       expect(hasCollection).toBe(false);

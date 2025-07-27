@@ -205,11 +205,13 @@ describe('BookmarkTreeDataProvider', () => {
       expect(treeItem.label).toBe('No bookmarks');
       expect(treeItem.tooltip).toEqual({
         value:
-          'No bookmarks added yet\n\nAdd first bookmark with Ctrl+Alt+K in file editor',
+          'No bookmarks added yet\n\nAdd the first bookmark with Ctrl+Alt+K in the file editor',
         isTrusted: true,
       });
       expect(treeItem.contextValue).toBe('empty-state');
-      expect(treeItem.description).toBe('Add first bookmark in file editor');
+      expect(treeItem.description).toBe(
+        'Add the first bookmark in the file editor'
+      );
       // Accept 0 (None) or undefined for collapsibleState due to mock
       expect([0, undefined]).toContain(treeItem.collapsibleState);
     });
