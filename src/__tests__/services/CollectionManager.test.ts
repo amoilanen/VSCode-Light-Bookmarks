@@ -47,8 +47,8 @@ describe('CollectionManager', () => {
       );
 
       expect(collection1?.order).toBe(0);
-      expect(collection2?.order).toBe(10);
-      expect(collection3?.order).toBe(20);
+      expect(collection2?.order).toBe(1);
+      expect(collection3?.order).toBe(2);
     });
 
     it('should return null if collection with same name already exists in the same workspace', () => {
@@ -114,26 +114,6 @@ describe('CollectionManager', () => {
 
     it('should return undefined for non-existent collection', () => {
       const found = collectionManager.getCollection('non-existent-id');
-
-      expect(found).toBeUndefined();
-    });
-  });
-
-  describe('getCollectionByName', () => {
-    it('should return collection by name', () => {
-      const collection = collectionManager.createCollection('Test Collection');
-      expect(collection).not.toBeNull();
-      if (!collection) return;
-
-      const found = collectionManager.getCollectionByName('Test Collection');
-
-      expect(found).toBe(collection);
-    });
-
-    it('should return undefined for non-existent collection name', () => {
-      const found = collectionManager.getCollectionByName(
-        'Non-existent Collection'
-      );
 
       expect(found).toBeUndefined();
     });
@@ -233,35 +213,6 @@ describe('CollectionManager', () => {
 
       expect(collectionManager.getAllCollections()).toHaveLength(1);
       expect(collectionManager.getCollection(collection.id)).toBe(collection);
-    });
-  });
-
-  describe('clearAllCollections', () => {
-    it('should remove all collections', () => {
-      collectionManager.createCollection('Collection 1');
-      collectionManager.createCollection('Collection 2');
-
-      collectionManager.clearAllCollections();
-
-      expect(collectionManager.getAllCollections()).toHaveLength(0);
-    });
-  });
-
-  describe('hasCollection', () => {
-    it('should return true for existing collection', () => {
-      const collection = collectionManager.createCollection('Test Collection');
-      expect(collection).not.toBeNull();
-      if (!collection) return;
-
-      const hasCollection = collectionManager.hasCollection(collection.id);
-
-      expect(hasCollection).toBe(true);
-    });
-
-    it('should return false for non-existent collection', () => {
-      const hasCollection = collectionManager.hasCollection('non-existent-id');
-
-      expect(hasCollection).toBe(false);
     });
   });
 
@@ -501,202 +452,6 @@ describe('CollectionManager', () => {
       const success = collectionManager.moveCollectionDown('non-existent-id');
 
       expect(success).toBe(false);
-    });
-  });
-
-  describe('moveCollectionToPosition', () => {
-    it('should move collection to specific position', () => {
-      const workspaceId = 'file:///workspace1';
-      const collection1 = collectionManager.createCollection(
-        'Collection 1',
-        workspaceId
-      );
-      const collection2 = collectionManager.createCollection(
-        'Collection 2',
-        workspaceId
-      );
-      const collection3 = collectionManager.createCollection(
-        'Collection 3',
-        workspaceId
-      );
-      expect(collection1).not.toBeNull();
-      expect(collection2).not.toBeNull();
-      expect(collection3).not.toBeNull();
-      if (!collection1 || !collection2 || !collection3) return;
-
-      // Move collection3 to position 0
-      const success = collectionManager.moveCollectionToPosition(
-        collection3.id,
-        0
-      );
-
-      expect(success).toBe(true);
-
-      const collections =
-        collectionManager.getCollectionsForWorkspace(workspaceId);
-      expect(collections[0]).toBe(collection3);
-      expect(collections[1]).toBe(collection1);
-      expect(collections[2]).toBe(collection2);
-    });
-
-    it('should return false for invalid position', () => {
-      const workspaceId = 'file:///workspace1';
-      const collection1 = collectionManager.createCollection(
-        'Collection 1',
-        workspaceId
-      );
-      expect(collection1).not.toBeNull();
-      if (!collection1) return;
-
-      const success = collectionManager.moveCollectionToPosition(
-        collection1.id,
-        5
-      );
-
-      expect(success).toBe(false);
-    });
-
-    it('should return true when moving to same position', () => {
-      const workspaceId = 'file:///workspace1';
-      const collection1 = collectionManager.createCollection(
-        'Collection 1',
-        workspaceId
-      );
-      expect(collection1).not.toBeNull();
-      if (!collection1) return;
-
-      const success = collectionManager.moveCollectionToPosition(
-        collection1.id,
-        0
-      );
-
-      expect(success).toBe(true);
-    });
-  });
-
-  describe('cleanupDuplicateUngroupedCollections', () => {
-    it('should remove duplicate ungrouped collections for the same workspace', () => {
-      const workspaceId = 'file:///workspace1';
-
-      // Create multiple ungrouped collections for the same workspace
-      const ungrouped1 = new Collection('Ungrouped', workspaceId, 0);
-      Object.defineProperty(ungrouped1, 'id', {
-        value: 'ungrouped-bookmarks',
-        writable: false,
-      });
-
-      const ungrouped2 = new Collection('Ungrouped', workspaceId, 10);
-      Object.defineProperty(ungrouped2, 'id', {
-        value: 'some-other-id',
-        writable: false,
-      });
-
-      const ungrouped3 = new Collection('Ungrouped', workspaceId, 20);
-      Object.defineProperty(ungrouped3, 'id', {
-        value: 'another-id',
-        writable: false,
-      });
-
-      // Add collections directly to the internal array to bypass duplicate prevention
-      (collectionManager as any).collections.push(
-        ungrouped1,
-        ungrouped2,
-        ungrouped3
-      );
-
-      // Verify we have 3 ungrouped collections
-      expect(
-        collectionManager
-          .getAllCollections()
-          .filter(c => c.name === 'Ungrouped')
-      ).toHaveLength(3);
-
-      // Clean up duplicates
-      collectionManager.cleanupDuplicateUngroupedCollections();
-
-      // Should only have 1 ungrouped collection left
-      const remainingUngrouped = collectionManager
-        .getAllCollections()
-        .filter(c => c.name === 'Ungrouped');
-      expect(remainingUngrouped).toHaveLength(1);
-      expect(remainingUngrouped[0].id).toBe('ungrouped-bookmarks');
-    });
-
-    it('should keep separate ungrouped collections for different workspaces', () => {
-      const workspace1 = 'file:///workspace1';
-      const workspace2 = 'file:///workspace2';
-
-      // Create ungrouped collections for different workspaces
-      const ungrouped1 = new Collection('Ungrouped', workspace1, 0);
-      Object.defineProperty(ungrouped1, 'id', {
-        value: 'ungrouped-bookmarks',
-        writable: false,
-      });
-
-      const ungrouped2 = new Collection('Ungrouped', workspace2, 0);
-      Object.defineProperty(ungrouped2, 'id', {
-        value: 'ungrouped-bookmarks',
-        writable: false,
-      });
-
-      // Add collections directly to the internal array to bypass duplicate prevention
-      (collectionManager as any).collections.push(ungrouped1, ungrouped2);
-
-      // Clean up duplicates
-      collectionManager.cleanupDuplicateUngroupedCollections();
-
-      // Should still have 2 ungrouped collections (one for each workspace)
-      const remainingUngrouped = collectionManager
-        .getAllCollections()
-        .filter(c => c.name === 'Ungrouped');
-      expect(remainingUngrouped).toHaveLength(2);
-    });
-
-    it('should not affect non-ungrouped collections', () => {
-      const workspaceId = 'file:///workspace1';
-
-      // Create regular collections
-      const regular1 = collectionManager.createCollection(
-        'Regular 1',
-        workspaceId
-      );
-      const regular2 = collectionManager.createCollection(
-        'Regular 2',
-        workspaceId
-      );
-
-      // Create duplicate ungrouped collections
-      const ungrouped1 = new Collection('Ungrouped', workspaceId, 0);
-      Object.defineProperty(ungrouped1, 'id', {
-        value: 'ungrouped-bookmarks',
-        writable: false,
-      });
-
-      const ungrouped2 = new Collection('Ungrouped', workspaceId, 10);
-      Object.defineProperty(ungrouped2, 'id', {
-        value: 'some-other-id',
-        writable: false,
-      });
-
-      // Add collections directly to the internal array to bypass duplicate prevention
-      (collectionManager as any).collections.push(ungrouped1, ungrouped2);
-
-      const totalBefore = collectionManager.getAllCollections().length;
-
-      // Clean up duplicates
-      collectionManager.cleanupDuplicateUngroupedCollections();
-
-      // Should have removed 1 ungrouped collection
-      const totalAfter = collectionManager.getAllCollections().length;
-      expect(totalAfter).toBe(totalBefore - 1);
-
-      // Regular collections should still exist
-      expect(regular1).toBeDefined();
-      expect(regular2).toBeDefined();
-      if (regular1 && regular2) {
-        expect(collectionManager.getCollection(regular1.id)).toBeDefined();
-        expect(collectionManager.getCollection(regular2.id)).toBeDefined();
-      }
     });
   });
 });

@@ -107,8 +107,6 @@ export class ExtensionManager {
       collectionsByWorkspace[ws].push(restoredCollection);
     });
 
-    // Clean up any duplicate ungrouped collections that might exist
-    this.collectionManager.cleanupDuplicateUngroupedCollections();
     // Ensure ungrouped exists for each workspace
     for (const ws of workspaces) {
       // Check if ungrouped collection exists by ID or name for this workspace
