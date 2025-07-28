@@ -82,7 +82,7 @@ describe('BookmarkTreeDataProvider', () => {
     collectionManager = new CollectionManager();
     bookmarkManager = new BookmarkManager(collectionManager);
     // Add the 'Ungrouped' collection that is always expected to exist
-    const wsId = 'file:///workspace';
+    const wsId = 'workspace'; // Use relative workspace ID
     const ungrouped = new Collection('Ungrouped', wsId, 0);
     Object.defineProperty(ungrouped, 'id', {
       value: 'ungrouped-bookmarks',
@@ -100,7 +100,7 @@ describe('BookmarkTreeDataProvider', () => {
       }
     ).workspaceFolders = [
       {
-        uri: vscode.Uri.parse(wsId),
+        uri: vscode.Uri.parse('file:///workspace'),
         name: 'workspace',
         index: 0,
       },

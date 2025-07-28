@@ -134,6 +134,37 @@ export class BookmarkManager {
     this.notifyBookmarksChanged();
   }
 
+  public clearBookmarksForWorkspace(_workspaceId?: string): void {
+    // Remove bookmarks that belong to the current workspace based on their file path
+    this.bookmarks = this.bookmarks.filter(bookmark => {
+      return !this.isBookmarkInCurrentWorkspace(bookmark);
+    });
+
+    this.notifyBookmarksChanged();
+  }
+
+  private isBookmarkInCurrentWorkspace(bookmark: Bookmark): boolean {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      // If no workspace is open, do not show any bookmarks
+      return false;
+    }
+
+    try {
+      const bookmarkUri = vscode.Uri.parse(bookmark.uri);
+
+      // Check if the bookmark URI is within any of the current workspace folders
+      return workspaceFolders.some(folder => {
+        const folderPath = folder.uri.fsPath;
+        const bookmarkPath = bookmarkUri.fsPath;
+        return bookmarkPath.startsWith(folderPath);
+      });
+    } catch (error) {
+      // If we can't parse the URI, assume it's not in the current workspace
+      return false;
+    }
+  }
+
   public hasBookmark(uri: string, line: number): boolean {
     return this.bookmarks.some(b => b.uri === uri && b.line === line);
   }

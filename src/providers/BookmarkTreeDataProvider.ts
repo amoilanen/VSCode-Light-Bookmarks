@@ -271,8 +271,7 @@ export class BookmarkTreeDataProvider
     (BookmarkTreeItem | EmptyStateTreeItem)[]
   > {
     const items: (BookmarkTreeItem | EmptyStateTreeItem)[] = [];
-    const currentWorkspaceId =
-      vscode.workspace.workspaceFolders?.[0]?.uri.toString();
+    const currentWorkspaceId = CollectionManager.getCurrentWorkspaceId();
     const collections =
       this.collectionManager.getCollectionsForWorkspace(currentWorkspaceId);
     const allBookmarks = this.bookmarkManager.getAllBookmarks();
@@ -360,8 +359,8 @@ export class BookmarkTreeDataProvider
   private isBookmarkInCurrentWorkspace(bookmark: Bookmark): boolean {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
-      // If no workspace is open, show all bookmarks
-      return true;
+      // If no workspace is open, do not show any bookmarks
+      return false;
     }
 
     try {

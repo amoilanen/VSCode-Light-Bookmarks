@@ -85,6 +85,7 @@ describe('ImportBookmarksCommand', () => {
         {
           id: 'test-collection-id',
           name: 'Test Collection',
+          workspaceId: 'workspace', // Include relative workspace ID
           order: 0,
           createdAt: '2023-01-01T00:00:00.000Z',
         },
@@ -108,6 +109,7 @@ describe('ImportBookmarksCommand', () => {
         {
           id: 'test-collection-id',
           name: 'Test Collection',
+          workspaceId: 'workspace', // Include relative workspace ID
           order: 0,
           createdAt: '2023-01-01T00:00:00.000Z',
         },
@@ -268,13 +270,13 @@ describe('ImportBookmarksCommand', () => {
 
       await command.execute();
 
-      // Check that existing data was cleared
-      expect(collectionManager.getAllCollections()).toHaveLength(1); // Only the imported collection
-      expect(bookmarkManager.getAllBookmarks()).toHaveLength(1); // Only the imported bookmark
+      // Check that existing data was cleared for current workspace only
+      expect(collectionManager.getAllCollections()).toHaveLength(2); // Existing collection from workspace1 + imported collection for current workspace
+      expect(bookmarkManager.getAllBookmarks()).toHaveLength(1); // Only the imported bookmark (existing one was in different workspace)
 
       expect(mockShowInformationMessage).toHaveBeenCalledWith(
         expect.stringContaining(
-          'Import completed! Imported 1 bookmarks and 1 collections.'
+          'Import completed! Replaced bookmarks in current workspace with 1 bookmarks and 1 collections.'
         )
       );
     });
@@ -338,6 +340,7 @@ describe('ImportBookmarksCommand', () => {
           {
             id: 'test-collection-id',
             name: 'Test Collection',
+            workspaceId: 'workspace', // Include relative workspace ID
             order: 0,
             createdAt: '2023-01-01T00:00:00.000Z',
           },
@@ -363,10 +366,10 @@ describe('ImportBookmarksCommand', () => {
       expect(bookmarks).toHaveLength(1);
       expect(bookmarks[0].uri).toBe('test.txt'); // Should remain as-is when no workspace
 
-      // Verify that the collection is assigned no workspaceId when no workspace folders exist
+      // Verify that the collection is assigned the imported workspaceId when no workspace folders exist
       const collections = collectionManager.getAllCollections();
       expect(collections).toHaveLength(1);
-      expect(collections[0].workspaceId).toBeUndefined(); // Should be undefined when no workspace
+      expect(collections[0].workspaceId).toBe('workspace'); // Should use imported workspaceId
       expect(collections[0].name).toBe('Test Collection');
 
       expect(mockShowInformationMessage).toHaveBeenCalledWith(
@@ -404,7 +407,7 @@ describe('ImportBookmarksCommand', () => {
       // Verify that the imported collection is assigned to the current workspace
       const collections = collectionManager.getAllCollections();
       expect(collections).toHaveLength(1);
-      expect(collections[0].workspaceId).toBe('file:///workspace'); // Should be current workspace
+      expect(collections[0].workspaceId).toBe('workspace'); // Should be relative workspace ID
       expect(collections[0].name).toBe('Test Collection');
       expect(collections[0].id).toBe('test-collection-id');
     });

@@ -113,7 +113,7 @@ describe('ExportBookmarksCommand', () => {
 
     it('should export correct JSON structure with relative paths', async () => {
       // Setup test data
-      const collection = new Collection('Test Collection', 'workspace1');
+      const collection = new Collection('Test Collection', 'workspace1'); // Use relative workspace ID
       collectionManager.addCollection(collection);
 
       bookmarkManager.addBookmark(
@@ -149,15 +149,15 @@ describe('ExportBookmarksCommand', () => {
       expect(exportData.collections[0]).toMatchObject({
         id: collection.id,
         name: 'Test Collection',
-        // workspaceId should be omitted for portability
+        workspaceId: 'workspace1', // Should export relative workspace ID
         order: 0,
       });
-      expect(exportData.collections[0]).not.toHaveProperty('workspaceId');
+      expect(exportData.collections[0]).toHaveProperty('workspaceId');
     });
 
     it('should handle URIs outside workspace as absolute paths', async () => {
       // Setup test data
-      const collection = new Collection('Test Collection', 'workspace1');
+      const collection = new Collection('Test Collection', 'workspace1'); // Use relative workspace ID
       collectionManager.addCollection(collection);
 
       bookmarkManager.addBookmark(
@@ -190,7 +190,7 @@ describe('ExportBookmarksCommand', () => {
       // Remove workspace folders mock
       (vscode.workspace as any).workspaceFolders = [];
 
-      const collection = new Collection('Test Collection', 'workspace1');
+      const collection = new Collection('Test Collection', 'workspace1'); // Use relative workspace ID
       collectionManager.addCollection(collection);
 
       bookmarkManager.addBookmark(

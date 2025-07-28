@@ -75,9 +75,9 @@ export class ImportBookmarksCommand {
       const importOption = await vscode.window.showQuickPick(
         [
           {
-            label: 'Replace all bookmarks',
+            label: 'Replace bookmarks in current workspace',
             description:
-              'Remove all existing bookmarks and collections, then import',
+              'Remove all existing bookmarks and collections in current workspace, then import',
             value: 'replace',
           },
           {
@@ -99,21 +99,23 @@ export class ImportBookmarksCommand {
 
       // Clear existing data if replace option is selected
       if (importOption.value === 'replace') {
-        this.bookmarkManager.clearAllBookmarks();
-        this.collectionManager.clearAllCollections();
+        const currentWorkspaceId = CollectionManager.getCurrentWorkspaceId();
+        this.bookmarkManager.clearBookmarksForWorkspace(currentWorkspaceId);
+        this.collectionManager.clearCollectionsForWorkspace(currentWorkspaceId);
       }
 
       // Import collections first
       let importedCollections = 0;
       for (const collectionData of importData.collections) {
         try {
-          // Assign collection to current workspace since workspaceId is omitted from exports
-          const currentWorkspaceId =
-            vscode.workspace.workspaceFolders?.[0]?.uri.toString();
+          // Use the imported workspaceId if available, otherwise use current workspace
+          const workspaceId =
+            collectionData.workspaceId ||
+            CollectionManager.getCurrentWorkspaceId();
 
           const collection = new Collection(
             collectionData.name,
-            currentWorkspaceId, // Use current workspace instead of imported workspaceId
+            workspaceId, // Use imported workspaceId or current workspace as fallback
             collectionData.order || 0
           );
 
@@ -212,7 +214,7 @@ export class ImportBookmarksCommand {
       // Show success message
       const message =
         importOption.value === 'replace'
-          ? `Import completed! Imported ${importedBookmarks} bookmarks and ${importedCollections} collections.`
+          ? `Import completed! Replaced bookmarks in current workspace with ${importedBookmarks} bookmarks and ${importedCollections} collections.`
           : `Import completed! Added ${importedBookmarks} new bookmarks and ${importedCollections} new collections.`;
 
       vscode.window.showInformationMessage(message);

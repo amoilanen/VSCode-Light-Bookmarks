@@ -1,22 +1,92 @@
 import { Collection } from '../models/Collection';
 import { localize } from './LocalizationService';
+import * as vscode from 'vscode';
 
 export class CollectionManager {
   private collections: Collection[] = [];
+
+  /**
+   * Converts an absolute workspace URI to a relative path
+   */
+  public static getRelativeWorkspaceId(
+    workspaceUri?: vscode.Uri
+  ): string | undefined {
+    if (!workspaceUri) {
+      return undefined;
+    }
+
+    try {
+      // Extract the workspace name from the path
+      const pathParts = workspaceUri.path
+        .split('/')
+        .filter(part => part.length > 0);
+      if (pathParts.length === 0) {
+        return undefined;
+      }
+
+      // Return the workspace name (last part of the path)
+      return pathParts[pathParts.length - 1];
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * Converts a relative workspace ID back to an absolute URI for comparison
+   */
+  public static getAbsoluteWorkspaceUri(
+    relativeWorkspaceId: string | undefined
+  ): vscode.Uri | undefined {
+    if (!relativeWorkspaceId) {
+      return undefined;
+    }
+
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+      return undefined;
+    }
+
+    // Find the workspace folder that matches the relative ID
+    return workspaceFolders.find(folder => {
+      const folderRelativeId = this.getRelativeWorkspaceId(folder.uri);
+      return folderRelativeId === relativeWorkspaceId;
+    })?.uri;
+  }
+
+  /**
+   * Gets the current workspace relative ID
+   */
+  public static getCurrentWorkspaceId(): string | undefined {
+    const currentWorkspaceUri = vscode.workspace.workspaceFolders?.[0]?.uri;
+    return this.getRelativeWorkspaceId(currentWorkspaceUri);
+  }
 
   public createCollection(
     name: string,
     workspaceId?: string
   ): Collection | null {
+    // Convert absolute workspace URI to relative ID if provided
+    let relativeWorkspaceId = workspaceId;
+    if (workspaceId && workspaceId.includes('://')) {
+      try {
+        const workspaceUri = vscode.Uri.parse(workspaceId);
+        relativeWorkspaceId =
+          CollectionManager.getRelativeWorkspaceId(workspaceUri);
+      } catch {
+        // If parsing fails, use as-is
+        relativeWorkspaceId = workspaceId;
+      }
+    }
+
     const existingCollection = this.collections.find(
-      c => c.name === name && c.workspaceId === workspaceId
+      c => c.name === name && c.workspaceId === relativeWorkspaceId
     );
     if (existingCollection) {
       return null;
     }
 
-    const nextOrder = this.getNextOrderForWorkspace(workspaceId);
-    const collection = new Collection(name, workspaceId, nextOrder);
+    const nextOrder = this.getNextOrderForWorkspace(relativeWorkspaceId);
+    const collection = new Collection(name, relativeWorkspaceId, nextOrder);
     this.collections.push(collection);
     return collection;
   }
@@ -40,8 +110,21 @@ export class CollectionManager {
   }
 
   public getCollectionsForWorkspace(workspaceId?: string): Collection[] {
+    // Convert absolute workspace URI to relative ID if provided
+    let relativeWorkspaceId = workspaceId;
+    if (workspaceId && workspaceId.includes('://')) {
+      try {
+        const workspaceUri = vscode.Uri.parse(workspaceId);
+        relativeWorkspaceId =
+          CollectionManager.getRelativeWorkspaceId(workspaceUri);
+      } catch {
+        // If parsing fails, use as-is
+        relativeWorkspaceId = workspaceId;
+      }
+    }
+
     const workspaceCollections = this.collections.filter(
-      c => c.workspaceId === workspaceId
+      c => c.workspaceId === relativeWorkspaceId
     );
     return workspaceCollections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
@@ -56,19 +139,65 @@ export class CollectionManager {
   }
 
   public hasCollectionByName(name: string, workspaceId?: string): boolean {
+    // Convert absolute workspace URI to relative ID if provided
+    let relativeWorkspaceId = workspaceId;
+    if (workspaceId && workspaceId.includes('://')) {
+      try {
+        const workspaceUri = vscode.Uri.parse(workspaceId);
+        relativeWorkspaceId =
+          CollectionManager.getRelativeWorkspaceId(workspaceUri);
+      } catch {
+        // If parsing fails, use as-is
+        relativeWorkspaceId = workspaceId;
+      }
+    }
+
     return this.collections.some(
-      c => c.name === name && c.workspaceId === workspaceId
+      c => c.name === name && c.workspaceId === relativeWorkspaceId
     );
   }
 
   public hasCollectionForWorkspace(id: string, workspaceId?: string): boolean {
+    // Convert absolute workspace URI to relative ID if provided
+    let relativeWorkspaceId = workspaceId;
+    if (workspaceId && workspaceId.includes('://')) {
+      try {
+        const workspaceUri = vscode.Uri.parse(workspaceId);
+        relativeWorkspaceId =
+          CollectionManager.getRelativeWorkspaceId(workspaceUri);
+      } catch {
+        // If parsing fails, use as-is
+        relativeWorkspaceId = workspaceId;
+      }
+    }
+
     return this.collections.some(
-      c => c.id === id && c.workspaceId === workspaceId
+      c => c.id === id && c.workspaceId === relativeWorkspaceId
     );
   }
 
   public clearAllCollections(): void {
     this.collections = [];
+  }
+
+  public clearCollectionsForWorkspace(workspaceId?: string): void {
+    // Convert absolute workspace URI to relative ID if provided
+    let relativeWorkspaceId = workspaceId;
+    if (workspaceId && workspaceId.includes('://')) {
+      try {
+        const workspaceUri = vscode.Uri.parse(workspaceId);
+        relativeWorkspaceId =
+          CollectionManager.getRelativeWorkspaceId(workspaceUri);
+      } catch {
+        // If parsing fails, use as-is
+        relativeWorkspaceId = workspaceId;
+      }
+    }
+
+    // Remove collections that belong to this workspace
+    this.collections = this.collections.filter(
+      collection => collection.workspaceId !== relativeWorkspaceId
+    );
   }
 
   public moveCollectionUp(collectionId: string): boolean {
@@ -146,9 +275,23 @@ export class CollectionManager {
    * Ensure the "Ungrouped" collection exists for a workspace
    */
   public ensureUngroupedCollection(workspaceId?: string): Collection {
+    // Convert absolute workspace URI to relative ID if provided
+    let relativeWorkspaceId = workspaceId;
+    if (workspaceId && workspaceId.includes('://')) {
+      try {
+        const workspaceUri = vscode.Uri.parse(workspaceId);
+        relativeWorkspaceId =
+          CollectionManager.getRelativeWorkspaceId(workspaceUri);
+      } catch {
+        // If parsing fails, use as-is
+        relativeWorkspaceId = workspaceId;
+      }
+    }
+
     // Look for existing ungrouped collection for this specific workspace
     const existingUngrouped = this.collections.find(
-      c => c.id === 'ungrouped-bookmarks' && c.workspaceId === workspaceId
+      c =>
+        c.id === 'ungrouped-bookmarks' && c.workspaceId === relativeWorkspaceId
     );
     if (existingUngrouped) {
       return existingUngrouped;
@@ -157,7 +300,7 @@ export class CollectionManager {
     // Create the "Ungrouped" collection for this workspace if it doesn't exist
     const ungrouped = new Collection(
       localize('label.ungrouped'),
-      workspaceId,
+      relativeWorkspaceId,
       0
     );
     Object.defineProperty(ungrouped, 'id', {
@@ -169,7 +312,22 @@ export class CollectionManager {
   }
 
   private getNextOrderForWorkspace(workspaceId?: string): number {
-    const workspaceCollections = this.getCollectionsForWorkspace(workspaceId);
+    // Convert absolute workspace URI to relative ID if provided
+    let relativeWorkspaceId = workspaceId;
+    if (workspaceId && workspaceId.includes('://')) {
+      try {
+        const workspaceUri = vscode.Uri.parse(workspaceId);
+        relativeWorkspaceId =
+          CollectionManager.getRelativeWorkspaceId(workspaceUri);
+      } catch {
+        // If parsing fails, use as-is
+        relativeWorkspaceId = workspaceId;
+      }
+    }
+
+    const workspaceCollections = this.collections.filter(
+      c => c.workspaceId === relativeWorkspaceId
+    );
     if (workspaceCollections.length === 0) {
       return 0;
     }

@@ -82,9 +82,8 @@ export class ExtensionManager {
 
     // Track which workspaces have ungrouped
     const workspaces = vscode.workspace.workspaceFolders?.map(wf =>
-      wf.uri.toString()
+      CollectionManager.getRelativeWorkspaceId(wf.uri)
     ) || [undefined];
-    const collectionsByWorkspace: Record<string, Collection[]> = {};
     collections.forEach(collection => {
       // Restore the collection with its original workspace ID and order
       const restoredCollection = new Collection(
@@ -102,9 +101,6 @@ export class ExtensionManager {
         writable: false,
       });
       this.collectionManager.addCollection(restoredCollection);
-      const ws = collection.workspaceId || 'undefined';
-      if (!collectionsByWorkspace[ws]) collectionsByWorkspace[ws] = [];
-      collectionsByWorkspace[ws].push(restoredCollection);
     });
 
     // Ensure ungrouped exists for each workspace

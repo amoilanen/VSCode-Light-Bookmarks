@@ -28,6 +28,7 @@ export const workspace = {
         scheme: 'file',
         authority: '',
         path: '/workspace',
+        fsPath: '/workspace', // Add fsPath for tests
         toString: () => 'file:///workspace',
       },
     },
@@ -62,12 +63,18 @@ export const Uri = {
       scheme: url.protocol.slice(0, -1), // Remove the ':' at the end
       authority: url.hostname,
       path: url.pathname,
+      fsPath: url.pathname, // Add fsPath for tests
       toString: () => uri,
     };
   }),
-  file: jest.fn((path: string) => ({ path, toString: () => `file://${path}` })),
+  file: jest.fn((path: string) => ({
+    path,
+    fsPath: path, // Add fsPath for tests
+    toString: () => `file://${path}`,
+  })),
   joinPath: jest.fn((baseUri: any, ...paths: string[]) => ({
     path: `${baseUri.path || baseUri}/${paths.join('/')}`,
+    fsPath: `${baseUri.path || baseUri}/${paths.join('/')}`, // Add fsPath for tests
     toString: () => `${baseUri.toString()}/${paths.join('/')}`,
   })),
 };

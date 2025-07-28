@@ -29,7 +29,7 @@ export class ExportBookmarksCommand {
         collections: allCollections.map(collection => ({
           id: collection.id,
           name: collection.name,
-          // Omit workspaceId since it contains absolute paths and makes exports non-portable
+          workspaceId: collection.workspaceId, // Export relative workspace ID for portability
           order: collection.order,
           createdAt: collection.createdAt,
         })),

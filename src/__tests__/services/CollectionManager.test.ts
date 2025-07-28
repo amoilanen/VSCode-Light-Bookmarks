@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { CollectionManager } from '../../services/CollectionManager';
 import { Collection } from '../../models/Collection';
 
@@ -6,6 +7,53 @@ describe('CollectionManager', () => {
 
   beforeEach(() => {
     collectionManager = new CollectionManager();
+  });
+
+  describe('static utility methods', () => {
+    it('should convert absolute workspace URI to relative ID', () => {
+      const absoluteUri = vscode.Uri.file('/home/user/projects/my-project');
+      const relativeId = CollectionManager.getRelativeWorkspaceId(absoluteUri);
+      expect(relativeId).toBe('my-project');
+    });
+
+    it('should handle workspace URI with trailing slash', () => {
+      const absoluteUri = vscode.Uri.file('/home/user/projects/my-project/');
+      const relativeId = CollectionManager.getRelativeWorkspaceId(absoluteUri);
+      expect(relativeId).toBe('my-project');
+    });
+
+    it('should return undefined for empty path', () => {
+      const absoluteUri = vscode.Uri.file('/');
+      const relativeId = CollectionManager.getRelativeWorkspaceId(absoluteUri);
+      expect(relativeId).toBeUndefined();
+    });
+
+    it('should return undefined for undefined URI', () => {
+      const relativeId = CollectionManager.getRelativeWorkspaceId(undefined);
+      expect(relativeId).toBeUndefined();
+    });
+
+    it('should get current workspace ID', () => {
+      // Mock workspace folders
+      const mockWorkspaceFolders = [
+        {
+          uri: vscode.Uri.file('/workspace'),
+          name: 'workspace',
+          index: 0,
+        },
+      ];
+      (vscode.workspace as any).workspaceFolders = mockWorkspaceFolders;
+
+      const currentWorkspaceId = CollectionManager.getCurrentWorkspaceId();
+      expect(currentWorkspaceId).toBe('workspace');
+    });
+
+    it('should return undefined for current workspace ID when no workspace folders', () => {
+      (vscode.workspace as any).workspaceFolders = [];
+
+      const currentWorkspaceId = CollectionManager.getCurrentWorkspaceId();
+      expect(currentWorkspaceId).toBeUndefined();
+    });
   });
 
   describe('createCollection', () => {
@@ -27,7 +75,7 @@ describe('CollectionManager', () => {
 
       expect(collection).not.toBeNull();
       expect(collection?.name).toBe('Test Collection');
-      expect(collection?.workspaceId).toBe(workspaceId);
+      expect(collection?.workspaceId).toBe('workspace'); // Should be relative
       expect(collection?.order).toBe(0);
     });
 
@@ -77,8 +125,8 @@ describe('CollectionManager', () => {
 
       expect(collection1).not.toBeNull();
       expect(collection2).not.toBeNull();
-      expect(collection1?.workspaceId).toBe(workspace1);
-      expect(collection2?.workspaceId).toBe(workspace2);
+      expect(collection1?.workspaceId).toBe('workspace1'); // Should be relative
+      expect(collection2?.workspaceId).toBe('workspace2'); // Should be relative
     });
   });
 
@@ -320,7 +368,7 @@ describe('CollectionManager', () => {
       expect(ungrouped).toBeDefined();
       expect(ungrouped.id).toBe('ungrouped-bookmarks');
       expect(ungrouped.name).toBe('Ungrouped');
-      expect(ungrouped.workspaceId).toBe(workspaceId);
+      expect(ungrouped.workspaceId).toBe('workspace1'); // Should be relative
       expect(
         collectionManager.hasCollectionForWorkspace(
           'ungrouped-bookmarks',
@@ -358,8 +406,8 @@ describe('CollectionManager', () => {
         collectionManager.ensureUngroupedCollection(workspace2);
 
       expect(ungrouped1).not.toBe(ungrouped2);
-      expect(ungrouped1.workspaceId).toBe(workspace1);
-      expect(ungrouped2.workspaceId).toBe(workspace2);
+      expect(ungrouped1.workspaceId).toBe('workspace1'); // Should be relative
+      expect(ungrouped2.workspaceId).toBe('workspace2'); // Should be relative
       expect(
         collectionManager
           .getAllCollections()
