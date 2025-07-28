@@ -109,6 +109,11 @@ export class CollectionManager {
     return [...this.collections];
   }
 
+  public getCollectionsForCurrentWorkspace(): Collection[] {
+    const currentWorkspaceId = CollectionManager.getCurrentWorkspaceId();
+    return this.getCollectionsForWorkspace(currentWorkspaceId);
+  }
+
   public getCollectionsForWorkspace(workspaceId?: string): Collection[] {
     // Convert absolute workspace URI to relative ID if provided
     let relativeWorkspaceId = workspaceId;

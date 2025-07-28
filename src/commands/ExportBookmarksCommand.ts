@@ -10,15 +10,21 @@ export class ExportBookmarksCommand {
 
   public async execute(): Promise<void> {
     try {
-      // Get all bookmarks and collections
-      const allBookmarks = this.bookmarkManager.getAllBookmarks();
-      const allCollections = this.collectionManager.getAllCollections();
+      // Get bookmarks and collections for the current workspace only
+      const workspaceBookmarks =
+        this.bookmarkManager.getBookmarksForCurrentWorkspace();
+      const workspaceCollections =
+        this.collectionManager.getCollectionsForCurrentWorkspace();
+
+      // Get current workspace name for the filename
+      const workspaceName = this.getCurrentWorkspaceName();
 
       // Create the export data structure
       const exportData = {
         version: '1.0',
         exportDate: new Date().toISOString(),
-        bookmarks: allBookmarks.map(bookmark => ({
+        workspaceName: workspaceName,
+        bookmarks: workspaceBookmarks.map(bookmark => ({
           uri: this.makeUriRelative(bookmark.uri),
           line: bookmark.line,
           description: bookmark.description,
@@ -26,7 +32,7 @@ export class ExportBookmarksCommand {
           order: bookmark.order,
           createdAt: bookmark.createdAt,
         })),
-        collections: allCollections.map(collection => ({
+        collections: workspaceCollections.map(collection => ({
           id: collection.id,
           name: collection.name,
           workspaceId: collection.workspaceId, // Export relative workspace ID for portability
@@ -38,7 +44,7 @@ export class ExportBookmarksCommand {
       // Show save dialog
       const saveUri = await vscode.window.showSaveDialog({
         defaultUri: vscode.Uri.file(
-          `bookmarks-export-${new Date().toISOString().split('T')[0]}.json`
+          `bookmarks-export-${workspaceName}-${new Date().toISOString().split('T')[0]}.json`
         ),
         filters: {
           'JSON Files': ['json'],
@@ -73,6 +79,21 @@ export class ExportBookmarksCommand {
         `Failed to export bookmarks: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
+  }
+
+  /**
+   * Gets the current workspace name for use in the export filename
+   */
+  private getCurrentWorkspaceName(): string {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      return 'no-workspace';
+    }
+
+    // Get the name of the first workspace folder
+    const workspaceName = workspaceFolders[0].name;
+    // Sanitize the name for use in filenames (remove special characters)
+    return workspaceName.replace(/[^a-zA-Z0-9-_]/g, '_');
   }
 
   /**

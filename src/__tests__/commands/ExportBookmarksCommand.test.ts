@@ -35,6 +35,7 @@ describe('ExportBookmarksCommand', () => {
           scheme: 'file',
           authority: '',
           path: '/workspace',
+          fsPath: '/workspace',
           toString: () => 'file:///workspace',
         },
         name: 'workspace',
@@ -48,9 +49,9 @@ describe('ExportBookmarksCommand', () => {
   });
 
   describe('execute', () => {
-    it('should export bookmarks and collections to JSON file', async () => {
+    it('should export bookmarks and collections to JSON file for current workspace', async () => {
       // Setup test data
-      const collection = new Collection('Test Collection', 'workspace1');
+      const collection = new Collection('Test Collection', 'workspace');
       collectionManager.addCollection(collection);
 
       bookmarkManager.addBookmark(
@@ -69,7 +70,7 @@ describe('ExportBookmarksCommand', () => {
 
       expect(mockShowSaveDialog).toHaveBeenCalledWith({
         defaultUri: expect.objectContaining({
-          path: expect.stringContaining('bookmarks-export-'),
+          path: expect.stringContaining('bookmarks-export-workspace-'),
         }),
         filters: {
           'JSON Files': ['json'],
@@ -111,9 +112,9 @@ describe('ExportBookmarksCommand', () => {
       );
     });
 
-    it('should export correct JSON structure with relative paths', async () => {
+    it('should export correct JSON structure with relative paths for current workspace', async () => {
       // Setup test data
-      const collection = new Collection('Test Collection', 'workspace1'); // Use relative workspace ID
+      const collection = new Collection('Test Collection', 'workspace'); // Use relative workspace ID
       collectionManager.addCollection(collection);
 
       bookmarkManager.addBookmark(
@@ -136,6 +137,7 @@ describe('ExportBookmarksCommand', () => {
 
       expect(exportData).toHaveProperty('version', '1.0');
       expect(exportData).toHaveProperty('exportDate');
+      expect(exportData).toHaveProperty('workspaceName', 'workspace');
       expect(exportData).toHaveProperty('bookmarks');
       expect(exportData).toHaveProperty('collections');
       expect(exportData.bookmarks).toHaveLength(1);
@@ -149,20 +151,29 @@ describe('ExportBookmarksCommand', () => {
       expect(exportData.collections[0]).toMatchObject({
         id: collection.id,
         name: 'Test Collection',
-        workspaceId: 'workspace1', // Should export relative workspace ID
+        workspaceId: 'workspace', // Should export relative workspace ID
         order: 0,
       });
       expect(exportData.collections[0]).toHaveProperty('workspaceId');
     });
 
-    it('should handle URIs outside workspace as absolute paths', async () => {
-      // Setup test data
-      const collection = new Collection('Test Collection', 'workspace1'); // Use relative workspace ID
+    it('should not export bookmarks outside current workspace', async () => {
+      // Setup test data - collection in current workspace
+      const collection = new Collection('Test Collection', 'workspace');
       collectionManager.addCollection(collection);
 
+      // Add bookmark inside workspace
+      bookmarkManager.addBookmark(
+        'file:///workspace/test.txt',
+        5,
+        collection.id,
+        'Test bookmark inside workspace'
+      );
+
+      // Add bookmark outside workspace
       bookmarkManager.addBookmark(
         'file:///other/path/test.txt',
-        5,
+        10,
         collection.id,
         'Test bookmark outside workspace'
       );
@@ -178,10 +189,12 @@ describe('ExportBookmarksCommand', () => {
       const buffer = writeCall[1] as Buffer;
       const exportData = JSON.parse(buffer.toString('utf8'));
 
+      // Should only export the bookmark inside the workspace
+      expect(exportData.bookmarks).toHaveLength(1);
       expect(exportData.bookmarks[0]).toMatchObject({
-        uri: 'file:///other/path/test.txt', // Should remain absolute as it's outside workspace
+        uri: 'test.txt', // Should be relative path
         line: 5,
-        description: 'Test bookmark outside workspace',
+        description: 'Test bookmark inside workspace',
         collectionId: collection.id,
       });
     });
@@ -190,7 +203,7 @@ describe('ExportBookmarksCommand', () => {
       // Remove workspace folders mock
       (vscode.workspace as any).workspaceFolders = [];
 
-      const collection = new Collection('Test Collection', 'workspace1'); // Use relative workspace ID
+      const collection = new Collection('Test Collection', 'workspace1');
       collectionManager.addCollection(collection);
 
       bookmarkManager.addBookmark(
@@ -211,11 +224,66 @@ describe('ExportBookmarksCommand', () => {
       const buffer = writeCall[1] as Buffer;
       const exportData = JSON.parse(buffer.toString('utf8'));
 
+      // Should export no bookmarks when no workspace is open
+      expect(exportData.bookmarks).toHaveLength(0);
+      expect(exportData.collections).toHaveLength(0);
+      expect(exportData.workspaceName).toBe('no-workspace');
+    });
+
+    it('should not export collections from other workspaces', async () => {
+      // Setup test data - collection in current workspace
+      const currentWorkspaceCollection = new Collection(
+        'Current Workspace Collection',
+        'workspace'
+      );
+      collectionManager.addCollection(currentWorkspaceCollection);
+
+      // Setup test data - collection in different workspace
+      const otherWorkspaceCollection = new Collection(
+        'Other Workspace Collection',
+        'other-workspace'
+      );
+      collectionManager.addCollection(otherWorkspaceCollection);
+
+      // Add bookmarks to both collections
+      bookmarkManager.addBookmark(
+        'file:///workspace/test.txt',
+        5,
+        currentWorkspaceCollection.id,
+        'Test bookmark in current workspace'
+      );
+
+      bookmarkManager.addBookmark(
+        'file:///other-workspace/test.txt',
+        10,
+        otherWorkspaceCollection.id,
+        'Test bookmark in other workspace'
+      );
+
+      const mockSaveUri = vscode.Uri.file('/test/export.json');
+      mockShowSaveDialog.mockResolvedValue(mockSaveUri);
+      mockWriteFile.mockResolvedValue(undefined);
+      mockShowInformationMessage.mockResolvedValue(undefined);
+
+      await command.execute();
+
+      const writeCall = mockWriteFile.mock.calls[0];
+      const buffer = writeCall[1] as Buffer;
+      const exportData = JSON.parse(buffer.toString('utf8'));
+
+      // Should only export the collection and bookmark from current workspace
+      expect(exportData.collections).toHaveLength(1);
+      expect(exportData.bookmarks).toHaveLength(1);
+      expect(exportData.collections[0]).toMatchObject({
+        id: currentWorkspaceCollection.id,
+        name: 'Current Workspace Collection',
+        workspaceId: 'workspace',
+      });
       expect(exportData.bookmarks[0]).toMatchObject({
-        uri: 'file:///some/path/test.txt', // Should remain absolute when no workspace
+        uri: 'test.txt',
         line: 5,
-        description: 'Test bookmark',
-        collectionId: collection.id,
+        description: 'Test bookmark in current workspace',
+        collectionId: currentWorkspaceCollection.id,
       });
     });
   });

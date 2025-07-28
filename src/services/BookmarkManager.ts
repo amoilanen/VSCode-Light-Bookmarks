@@ -129,6 +129,17 @@ export class BookmarkManager {
     return [...this.bookmarks];
   }
 
+  public getBookmarksForCurrentWorkspace(): Bookmark[] {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      return [];
+    }
+
+    return this.bookmarks.filter(bookmark =>
+      this.isBookmarkInCurrentWorkspace(bookmark)
+    );
+  }
+
   public clearAllBookmarks(): void {
     this.bookmarks = [];
     this.notifyBookmarksChanged();
