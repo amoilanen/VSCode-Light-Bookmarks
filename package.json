@@ -192,8 +192,7 @@
         {
           "command": "lightBookmarks.toggleBookmark",
           "title": "%command.toggleBookmark.title%",
-          "group": "navigation",
-          "when": "editorTextFocus"
+          "group": "navigation"
         }
       ],
       "view/title": [
