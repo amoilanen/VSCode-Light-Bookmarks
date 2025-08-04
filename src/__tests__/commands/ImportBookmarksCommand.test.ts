@@ -18,6 +18,7 @@ describe('ImportBookmarksCommand', () => {
   let decorationProvider: BookmarkDecorationProvider;
   let mockShowOpenDialog: jest.SpyInstance;
   let mockReadFile: jest.SpyInstance;
+  let mockStat: jest.SpyInstance;
   let mockShowQuickPick: jest.SpyInstance;
   let mockShowInformationMessage: jest.SpyInstance;
   let mockShowErrorMessage: jest.SpyInstance;
@@ -46,6 +47,7 @@ describe('ImportBookmarksCommand', () => {
 
     mockShowOpenDialog = jest.spyOn(vscode.window, 'showOpenDialog');
     mockReadFile = jest.spyOn(vscode.workspace.fs, 'readFile');
+    mockStat = jest.spyOn(vscode.workspace.fs, 'stat');
     mockShowQuickPick = jest.spyOn(vscode.window, 'showQuickPick');
     mockShowInformationMessage = jest.spyOn(
       vscode.window,
@@ -124,6 +126,9 @@ describe('ImportBookmarksCommand', () => {
       );
       mockShowQuickPick.mockResolvedValue({ value: 'merge' });
 
+      // Mock file existence check to return true
+      mockStat.mockResolvedValue({} as vscode.FileStat);
+
       jest.spyOn(storageService, 'saveBookmarks').mockResolvedValue();
       jest.spyOn(storageService, 'saveCollections').mockResolvedValue();
       jest.spyOn(treeDataProvider, 'refresh').mockImplementation();
@@ -167,6 +172,9 @@ describe('ImportBookmarksCommand', () => {
         Buffer.from(JSON.stringify(sampleImportDataWithAbsolutePaths))
       );
       mockShowQuickPick.mockResolvedValue({ value: 'merge' });
+
+      // Mock file existence check to return true
+      mockStat.mockResolvedValue({} as vscode.FileStat);
 
       jest.spyOn(storageService, 'saveBookmarks').mockResolvedValue();
       jest.spyOn(storageService, 'saveCollections').mockResolvedValue();
@@ -263,6 +271,9 @@ describe('ImportBookmarksCommand', () => {
       );
       mockShowQuickPick.mockResolvedValue({ value: 'replace' });
 
+      // Mock file existence check to return true
+      mockStat.mockResolvedValue({} as vscode.FileStat);
+
       jest.spyOn(storageService, 'saveBookmarks').mockResolvedValue();
       jest.spyOn(storageService, 'saveCollections').mockResolvedValue();
       jest.spyOn(treeDataProvider, 'refresh').mockImplementation();
@@ -300,6 +311,9 @@ describe('ImportBookmarksCommand', () => {
         Buffer.from(JSON.stringify(sampleImportData))
       );
       mockShowQuickPick.mockResolvedValue({ value: 'merge' });
+
+      // Mock file existence check to return true
+      mockStat.mockResolvedValue({} as vscode.FileStat);
 
       jest.spyOn(storageService, 'saveBookmarks').mockResolvedValue();
       jest.spyOn(storageService, 'saveCollections').mockResolvedValue();
@@ -354,6 +368,9 @@ describe('ImportBookmarksCommand', () => {
       );
       mockShowQuickPick.mockResolvedValue({ value: 'merge' });
 
+      // Mock file existence check to return true
+      mockStat.mockResolvedValue({} as vscode.FileStat);
+
       jest.spyOn(storageService, 'saveBookmarks').mockResolvedValue();
       jest.spyOn(storageService, 'saveCollections').mockResolvedValue();
       jest.spyOn(treeDataProvider, 'refresh').mockImplementation();
@@ -366,10 +383,10 @@ describe('ImportBookmarksCommand', () => {
       expect(bookmarks).toHaveLength(1);
       expect(bookmarks[0].uri).toBe('test.txt'); // Should remain as-is when no workspace
 
-      // Verify that the collection is assigned the imported workspaceId when no workspace folders exist
+      // Verify that the collection is assigned to the current workspace (even when no workspace folders exist)
       const collections = collectionManager.getAllCollections();
       expect(collections).toHaveLength(1);
-      expect(collections[0].workspaceId).toBe('workspace'); // Should use imported workspaceId
+      expect(collections[0].workspaceId).toBe(undefined); // Should be undefined when no workspace folders exist
       expect(collections[0].name).toBe('Test Collection');
 
       expect(mockShowInformationMessage).toHaveBeenCalledWith(
@@ -397,6 +414,9 @@ describe('ImportBookmarksCommand', () => {
       );
       mockShowQuickPick.mockResolvedValue({ value: 'merge' });
 
+      // Mock file existence check to return true
+      mockStat.mockResolvedValue({} as vscode.FileStat);
+
       jest.spyOn(storageService, 'saveBookmarks').mockResolvedValue();
       jest.spyOn(storageService, 'saveCollections').mockResolvedValue();
       jest.spyOn(treeDataProvider, 'refresh').mockImplementation();
@@ -410,6 +430,76 @@ describe('ImportBookmarksCommand', () => {
       expect(collections[0].workspaceId).toBe('workspace'); // Should be relative workspace ID
       expect(collections[0].name).toBe('Test Collection');
       expect(collections[0].id).toBe('test-collection-id');
+    });
+
+    it('should skip bookmarks for files that do not exist in current workspace', async () => {
+      const importDataWithNonExistentFile = {
+        version: '1.0',
+        exportDate: '2023-01-01T00:00:00.000Z',
+        bookmarks: [
+          {
+            uri: 'existing-file.txt', // This file exists
+            line: 5,
+            description: 'Existing file bookmark',
+            collectionId: 'test-collection-id',
+            order: 0,
+            createdAt: '2023-01-01T00:00:00.000Z',
+          },
+          {
+            uri: 'non-existent-file.txt', // This file doesn't exist
+            line: 10,
+            description: 'Non-existent file bookmark',
+            collectionId: 'test-collection-id',
+            order: 1,
+            createdAt: '2023-01-01T00:00:00.000Z',
+          },
+        ],
+        collections: [
+          {
+            id: 'test-collection-id',
+            name: 'Test Collection',
+            workspaceId: 'workspace',
+            order: 0,
+            createdAt: '2023-01-01T00:00:00.000Z',
+          },
+        ],
+      };
+
+      const mockOpenUri = vscode.Uri.file('/test/import.json');
+      mockShowOpenDialog.mockResolvedValue([mockOpenUri]);
+      mockReadFile.mockResolvedValue(
+        Buffer.from(JSON.stringify(importDataWithNonExistentFile))
+      );
+      mockShowQuickPick.mockResolvedValue({ value: 'merge' });
+
+      // Mock file existence check to return true for existing file, false for non-existent file
+      mockStat.mockImplementation((uri: vscode.Uri) => {
+        if (uri.path.includes('existing-file.txt')) {
+          return Promise.resolve({} as vscode.FileStat);
+        } else {
+          return Promise.reject(new Error('File not found'));
+        }
+      });
+
+      jest.spyOn(storageService, 'saveBookmarks').mockResolvedValue();
+      jest.spyOn(storageService, 'saveCollections').mockResolvedValue();
+      jest.spyOn(treeDataProvider, 'refresh').mockImplementation();
+      jest.spyOn(decorationProvider, 'updateDecorations').mockImplementation();
+
+      await command.execute();
+
+      // Verify that only the bookmark for the existing file was imported
+      const bookmarks = bookmarkManager.getAllBookmarks();
+      expect(bookmarks).toHaveLength(1);
+      expect(bookmarks[0].uri).toBe('file:///workspace/existing-file.txt');
+      expect(bookmarks[0].description).toBe('Existing file bookmark');
+
+      // Verify that the success message mentions skipped bookmarks
+      expect(mockShowInformationMessage).toHaveBeenCalledWith(
+        expect.stringContaining(
+          "1 bookmarks were skipped because their files don't exist in the current workspace"
+        )
+      );
     });
   });
 });

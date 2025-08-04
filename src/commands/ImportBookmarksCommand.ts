@@ -104,18 +104,15 @@ export class ImportBookmarksCommand {
         this.collectionManager.clearCollectionsForWorkspace(currentWorkspaceId);
       }
 
-      // Import collections first
+      // Import collections first - always import to current workspace
       let importedCollections = 0;
+      const currentWorkspaceId = CollectionManager.getCurrentWorkspaceId();
+
       for (const collectionData of importData.collections) {
         try {
-          // Use the imported workspaceId if available, otherwise use current workspace
-          const workspaceId =
-            collectionData.workspaceId ||
-            CollectionManager.getCurrentWorkspaceId();
-
           const collection = new Collection(
             collectionData.name,
-            workspaceId, // Use imported workspaceId or current workspace as fallback
+            currentWorkspaceId, // Always use current workspace
             collectionData.order || 0
           );
 
@@ -149,12 +146,20 @@ export class ImportBookmarksCommand {
         }
       }
 
-      // Import bookmarks
+      // Import bookmarks - only import those that exist in current workspace
       let importedBookmarks = 0;
+      let skippedBookmarks = 0;
+
       for (const bookmarkData of importData.bookmarks) {
         try {
           // Convert relative path to absolute URI
           const absoluteUri = this.makeUriAbsolute(bookmarkData.uri);
+
+          // Check if the file exists in the current workspace
+          if (!(await this.fileExistsInCurrentWorkspace(absoluteUri))) {
+            skippedBookmarks++;
+            continue; // Skip bookmarks for files that don't exist in current workspace
+          }
 
           // Check if bookmark already exists (for merge mode)
           if (importOption.value === 'merge') {
@@ -212,10 +217,17 @@ export class ImportBookmarksCommand {
       this.decorationProvider.updateDecorations();
 
       // Show success message
-      const message =
-        importOption.value === 'replace'
-          ? `Import completed! Replaced bookmarks in current workspace with ${importedBookmarks} bookmarks and ${importedCollections} collections.`
-          : `Import completed! Added ${importedBookmarks} new bookmarks and ${importedCollections} new collections.`;
+      let message = '';
+      if (importOption.value === 'replace') {
+        message = `Import completed! Replaced bookmarks in current workspace with ${importedBookmarks} bookmarks and ${importedCollections} collections.`;
+      } else {
+        message = `Import completed! Added ${importedBookmarks} new bookmarks and ${importedCollections} new collections.`;
+      }
+
+      // Add information about skipped bookmarks if any were skipped
+      if (skippedBookmarks > 0) {
+        message += ` ${skippedBookmarks} bookmarks were skipped because their files don't exist in the current workspace.`;
+      }
 
       vscode.window.showInformationMessage(message);
     } catch (error) {
@@ -255,6 +267,47 @@ export class ImportBookmarksCommand {
     } catch (error) {
       // If URI creation fails, return as-is
       return uriOrPath;
+    }
+  }
+
+  /**
+   * Checks if a file exists in the current workspace
+   */
+  private async fileExistsInCurrentWorkspace(uri: string): Promise<boolean> {
+    try {
+      // If it's already an absolute URI (contains scheme), parse it directly
+      if (uri.includes('://')) {
+        const fileUri = vscode.Uri.parse(uri);
+        try {
+          await vscode.workspace.fs.stat(fileUri);
+          return true;
+        } catch (statError) {
+          // File doesn't exist
+          return false;
+        }
+      }
+
+      // For relative paths, check if we have workspace folders
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders || workspaceFolders.length === 0) {
+        // No workspace folders, assume the file exists (for backward compatibility)
+        return true;
+      }
+
+      // Convert relative path to absolute URI using the first workspace folder
+      const workspaceUri = workspaceFolders[0].uri;
+      const absoluteUri = vscode.Uri.joinPath(workspaceUri, uri);
+
+      try {
+        await vscode.workspace.fs.stat(absoluteUri);
+        return true;
+      } catch (statError) {
+        // File doesn't exist
+        return false;
+      }
+    } catch (error) {
+      // URI parsing failed or other error
+      return false;
     }
   }
 

@@ -37,6 +37,7 @@ export const workspace = {
   fs: {
     writeFile: jest.fn(),
     readFile: jest.fn(),
+    stat: jest.fn(),
   },
 };
 
