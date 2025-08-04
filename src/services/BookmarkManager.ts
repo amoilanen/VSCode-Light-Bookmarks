@@ -259,4 +259,85 @@ export class BookmarkManager {
     this.notifyBookmarksChanged();
     return true;
   }
+
+  public updateBookmarksForDocumentChanges(
+    uri: string,
+    contentChanges: readonly vscode.TextDocumentContentChangeEvent[]
+  ): { removed: number; updated: number } {
+    const bookmarksInFile = this.getBookmarksByUri(uri);
+
+    if (bookmarksInFile.length === 0) {
+      return { removed: 0, updated: 0 }; // No bookmarks in this file
+    }
+
+    const bookmarksToRemove: Array<{ uri: string; line: number }> = [];
+    const bookmarksToUpdate: Array<{
+      uri: string;
+      oldLine: number;
+      newLine: number;
+    }> = [];
+
+    // Process each change in the document
+    for (const change of contentChanges) {
+      const changeStartLine = change.range.start.line;
+      const changeEndLine = change.range.end.line;
+      const linesRemoved = changeEndLine - changeStartLine;
+      const linesAdded =
+        change.text === '' ? 0 : change.text.split('\n').length - 1;
+
+      // Find bookmarks that are affected by this change
+      for (const bookmark of bookmarksInFile) {
+        const bookmarkLine = bookmark.line;
+
+        if (bookmarkLine < changeStartLine) {
+          // Bookmark is before the change, no action needed
+          continue;
+        }
+
+        if (bookmarkLine >= changeStartLine && bookmarkLine <= changeEndLine) {
+          // Bookmark is within the deleted range - remove it
+          bookmarksToRemove.push({ uri: bookmark.uri, line: bookmark.line });
+        } else if (bookmarkLine > changeEndLine) {
+          // Bookmark is after the change - update its line number
+          const newLine = bookmarkLine - linesRemoved + linesAdded;
+          if (newLine >= 0) {
+            bookmarksToUpdate.push({
+              uri: bookmark.uri,
+              oldLine: bookmark.line,
+              newLine: newLine,
+            });
+          } else {
+            // If new line would be negative, remove the bookmark
+            bookmarksToRemove.push({ uri: bookmark.uri, line: bookmark.line });
+          }
+        }
+      }
+    }
+
+    // Remove bookmarks that are no longer valid
+    for (const bookmark of bookmarksToRemove) {
+      this.removeBookmark(bookmark.uri, bookmark.line);
+    }
+
+    // Update line numbers for bookmarks that moved
+    for (const update of bookmarksToUpdate) {
+      const bookmark = this.getBookmark(update.uri, update.oldLine);
+      if (bookmark) {
+        // Remove the old bookmark
+        this.removeBookmark(update.uri, update.oldLine);
+        // Add the bookmark at the new line
+        this.addBookmark(
+          update.uri,
+          update.newLine,
+          bookmark.collectionId,
+          bookmark.description
+        );
+      }
+    }
+
+    return {
+      removed: bookmarksToRemove.length,
+      updated: bookmarksToUpdate.length,
+    };
+  }
 }

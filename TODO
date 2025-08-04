@@ -1,5 +1,4 @@
 - Add more tests for the extension, cover uncovered modules
-- Import and export should work on a per workspace basis
 
 - Publish the extension to the marketplace for VS Code and OSS Code, VSCodium
   - Rename the extension

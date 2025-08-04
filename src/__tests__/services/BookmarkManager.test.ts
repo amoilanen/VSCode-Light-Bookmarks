@@ -2,6 +2,7 @@ import { BookmarkManager } from '../../services/BookmarkManager';
 import { CollectionManager } from '../../services/CollectionManager';
 import { Bookmark } from '../../models/Bookmark';
 import { Collection } from '../../models/Collection';
+import * as vscode from 'vscode';
 
 describe('BookmarkManager', () => {
   let bookmarkManager: BookmarkManager;
@@ -314,6 +315,98 @@ describe('BookmarkManager', () => {
         expect(bookmarks[1].order).toBe(10);
         expect(bookmarks[2].order).toBe(20);
       }
+    });
+  });
+
+  describe('Document change handling', () => {
+    it('should remove bookmarks when their lines are deleted', () => {
+      const collectionManager = new CollectionManager();
+      const manager = new BookmarkManager(collectionManager);
+
+      // Add bookmarks at different lines
+      manager.addBookmark('file:///test.ts', 5);
+      manager.addBookmark('file:///test.ts', 10);
+      manager.addBookmark('file:///test.ts', 15);
+
+      expect(manager.getAllBookmarks()).toHaveLength(3);
+
+      // Simulate deletion of lines 8-12 (which includes bookmark2 at line 10)
+      // Mock event structure for reference
+      // const mockEvent = {
+      //   document: { uri: { toString: () => 'file:///test.ts' } },
+      //   contentChanges: [
+      //     {
+      //       range: { start: { line: 8 }, end: { line: 12 } },
+      //       text: '',
+      //     },
+      //   ],
+      // };
+
+      // Test the new updateBookmarksForDocumentChanges method
+      const mockContentChanges = [
+        {
+          range: { start: { line: 8 }, end: { line: 12 } },
+          rangeOffset: 0,
+          rangeLength: 0,
+          text: '',
+        },
+      ] as vscode.TextDocumentContentChangeEvent[];
+
+      manager.updateBookmarksForDocumentChanges(
+        'file:///test.ts',
+        mockContentChanges
+      );
+
+      // Verify bookmark2 was removed but others remain
+      expect(manager.getAllBookmarks()).toHaveLength(2);
+      expect(manager.hasBookmark('file:///test.ts', 5)).toBe(true);
+      expect(manager.hasBookmark('file:///test.ts', 10)).toBe(false);
+      expect(manager.hasBookmark('file:///test.ts', 11)).toBe(true); // 15 - 4 = 11
+    });
+
+    it('should update bookmark line numbers when lines are inserted above', () => {
+      const collectionManager = new CollectionManager();
+      const manager = new BookmarkManager(collectionManager);
+
+      // Add bookmarks
+      manager.addBookmark('file:///test.ts', 5);
+      manager.addBookmark('file:///test.ts', 10);
+
+      expect(manager.getAllBookmarks()).toHaveLength(2);
+
+      // Simulate insertion of 3 lines at line 3
+      // Mock event structure for reference
+      // const mockEvent = {
+      //   document: { uri: { toString: () => 'file:///test.ts' } },
+      //   contentChanges: [
+      //     {
+      //       range: { start: { line: 3 }, end: { line: 3 } },
+      //       text: 'new line 1\nnew line 2\nnew line 3\n',
+      //     },
+      //   ],
+      // };
+
+      // Test the new updateBookmarksForDocumentChanges method
+      const mockContentChanges = [
+        {
+          range: { start: { line: 3 }, end: { line: 3 } },
+          rangeOffset: 0,
+          rangeLength: 0,
+          text: 'new line 1\nnew line 2\nnew line 3\n',
+        },
+      ] as vscode.TextDocumentContentChangeEvent[];
+
+      manager.updateBookmarksForDocumentChanges(
+        'file:///test.ts',
+        mockContentChanges
+      );
+
+      // Verify bookmarks moved down by 3 lines
+      expect(manager.getAllBookmarks()).toHaveLength(2);
+      expect(manager.hasBookmark('file:///test.ts', 5)).toBe(false);
+      expect(manager.hasBookmark('file:///test.ts', 8)).toBe(true); // 5 + 3
+      expect(manager.hasBookmark('file:///test.ts', 10)).toBe(false);
+      expect(manager.hasBookmark('file:///test.ts', 13)).toBe(true); // 10 + 3
     });
   });
 });

@@ -501,6 +501,21 @@ export class ExtensionManager {
         if (editor && editor.document === event.document) {
           this.decorationProvider.updateDecorations(editor);
         }
+
+        // Handle bookmark cleanup when lines are deleted
+        const uri = event.document.uri.toString();
+        const result = this.bookmarkManager.updateBookmarksForDocumentChanges(
+          uri,
+          event.contentChanges
+        );
+
+        // Save changes and refresh UI if any bookmarks were affected
+        if (result.removed > 0 || result.updated > 0) {
+          this.storageService.saveBookmarks(
+            this.bookmarkManager.getAllBookmarks()
+          );
+          this.treeDataProvider.refresh();
+        }
       }
     );
     this.disposables.push(onDidChangeTextDocument);
